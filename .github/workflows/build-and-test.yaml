@@ -1,0 +1,35 @@
+name: Run checks
+
+on: [push]
+
+jobs:
+  build: 
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v1
+
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+        components: rustfmt
+
+    - name: Compile
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+
+    - name: Test
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+
+    - name: Check style
+      uses: actions-rs/cargo@v1
+      with:
+        command: fmt
+        args: -- --check
