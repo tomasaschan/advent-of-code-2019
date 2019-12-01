@@ -1,0 +1,8 @@
+[package]
+name = "aoc-2019-01"
+version = "0.1.0"
+authors = ["Tomas Aschan <1550920+tomasaschan@users.noreply.github.com>"]
+edition = "2018"
+
+[dependencies]
+util = { path = "../util" }
