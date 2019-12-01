@@ -1,5 +1,7 @@
 # Advent of Code 2019
 
+![](https://github.com/tomasaschan/advent-of-code-2019/workflows/Run%20checks/badge.svg)
+
 These are my solutions to Advent of Code 2019. Learning [rust](https://rust-lang.org)! ⚙
 
 ## Building and running
