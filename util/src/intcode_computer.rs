@@ -23,17 +23,29 @@ fn step(computer: &mut IntcodeComputer) {
     if op == 99 {
         return;
     }
-    let a = computer.memory[computer.memory[computer.instruction_pointer + 1] as usize];
-    let b = computer.memory[computer.memory[computer.instruction_pointer + 2] as usize];
-    let c = match op {
-        1 => a + b,
-        2 => a * b,
+    match op {
+        1 => binary_op(computer, |a, b| a + b),
+        2 => binary_op(computer, |a, b| a * b),
         _ => panic!("invalid opcode {}", op),
     };
+}
 
-    let ci = computer.memory[computer.instruction_pointer + 3];
-    computer.memory[ci as usize] = c;
-    computer.instruction_pointer = computer.instruction_pointer + 4;
+fn binary_op<F: Fn(u32, u32) -> u32>(computer: &mut IntcodeComputer, op: F) {
+    let a = value_at_offset(computer, 1);
+    let b = value_at_offset(computer, 2);
+    set_at_offset(computer, 3, op(a, b));
+    step_pointer(computer, 4);
+}
+
+fn value_at_offset(computer: &IntcodeComputer, offset: usize) -> u32 {
+    computer.memory[computer.memory[computer.instruction_pointer + offset] as usize]
+}
+fn set_at_offset(computer: &mut IntcodeComputer, offset: usize, value: u32) {
+    let ci = computer.memory[computer.instruction_pointer + offset];
+    computer.memory[ci as usize] = value;
+}
+fn step_pointer(computer: &mut IntcodeComputer, steps: usize) {
+    computer.instruction_pointer = computer.instruction_pointer + steps;
 }
 
 #[test]
