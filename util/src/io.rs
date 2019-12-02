@@ -8,7 +8,6 @@ pub mod io {
         io::stdin()
             .read_to_string(&mut input)
             .expect("Could not read input from stdin!");
-
-        return input;
+        return input.trim().to_string();
     }
 }
