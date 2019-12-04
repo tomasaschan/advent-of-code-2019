@@ -8,12 +8,12 @@ These are my solutions to Advent of Code 2019. Learning [rust](https://rust-lang
 
 - [Install tooling](https://www.rust-lang.org/tools/install)
 
-- E.g. `cargo run aco-2019-01 < input/dec01.txt`.  
+- E.g. `cargo run --bin aoc-2019-01 < input/dec01.txt`.  
   Solvers are named `aoc-2019-DD` and take input from stdin.
 
 - Optional: after `cargo install cargo-watch`, you can
   ```sh
-  cargo watch -s "cargo run aoc-2019-01 < input/dec01.txt"
+  cargo watch -s "cargo run --release --bin aoc-2019-01 < input/dec01.txt"
   ```
   to re-run automatically on change.
 
