@@ -10,6 +10,7 @@ fn main() {
     let (first, second) = parse(get_input());
 
     println!("a: {}", solve_a(&first, &second));
+    println!("b: {}", solve_b(&first, &second));
 }
 
 fn solve_a(first: &Vec<Instruction>, second: &Vec<Instruction>) -> i32 {
@@ -24,6 +25,26 @@ fn solve_a(first: &Vec<Instruction>, second: &Vec<Instruction>) -> i32 {
         .unwrap()
 }
 
+fn solve_b(first: &Vec<Instruction>, second: &Vec<Instruction>) -> i32 {
+    fn follow(is: &Vec<Instruction>) -> HashMap<(i32, i32), usize> {
+        let mut map = HashMap::new();
+        for (steps, pos) in follow_wire(is).into_iter().enumerate() {
+            if !map.contains_key(&pos) {
+                map.insert(pos, steps + 1);
+            }
+        }
+        map
+    }
+    let (w1, w2) = (follow(first), follow(second));
+    let (s1, s2): (HashSet<&(i32, i32)>, HashSet<&(i32, i32)>) = (
+        HashSet::from_iter(w1.keys().into_iter()),
+        HashSet::from_iter(w2.keys().into_iter()),
+    );
+
+    s1.intersection(&s2)
+        .map(|p| w1.get(p).unwrap() + w2.get(p).unwrap())
+        .min()
+        .unwrap() as i32
 }
 
 fn parse(input: String) -> (Vec<Instruction>, Vec<Instruction>) {
