@@ -1,36 +1,37 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
+use std::iter::FromIterator;
+use std::iter::Iterator;
+
 use util::io::get_input;
+use util::map_2d::Direction;
 
 fn main() {
-    let wires = parse(get_input());
+    let (first, second) = parse(get_input());
 
-    println!("a: {}", solve_a(wires));
+    println!("a: {}", solve_a(&first, &second));
 }
 
-fn solve_a(wires: Vec<Vec<Instruction>>) -> i32 {
-    let mut world = WorldMap::<i32>::new();
-    for (i, wire) in wires.iter().enumerate() {
-        map_wire(&mut world, 1 << i, wire)
-    }
+fn solve_a(first: &Vec<Instruction>, second: &Vec<Instruction>) -> i32 {
+    fn follow(w: &Vec<Instruction>) -> HashSet<(i32, i32)> {
+        HashSet::from_iter(follow_wire(&w).into_iter())
+    };
+    let (w1, w2) = (follow(first), follow(second));
 
-    let mut crossings: Vec<(i32, i32)> = world
-        .terrain
-        .iter()
-        .filter(|(_, v)| **v == 3i32)
-        .map(|(pos, _)| *pos)
-        .collect();
-    crossings.sort_by_key(|(x, y)| x.abs() + y.abs());
-    let (x, y) = crossings.first().unwrap();
-
-    x.abs() + y.abs()
+    w1.intersection(&w2)
+        .map(|(x, y)| x.abs() + y.abs())
+        .min()
+        .unwrap()
 }
 
-fn parse(input: String) -> Vec<Vec<Instruction>> {
+}
+
+fn parse(input: String) -> (Vec<Instruction>, Vec<Instruction>) {
     fn parse_step(s: String) -> u32 {
         s.parse::<u32>().expect("invalid step size")
     }
 
-    input
+    let paths: Vec<Vec<Instruction>> = input
         .split("\n")
         .map(|line| {
             line.split(",")
@@ -47,82 +48,33 @@ fn parse(input: String) -> Vec<Vec<Instruction>> {
                 })
                 .collect()
         })
-        .collect()
+        .collect();
+    (paths[0].clone(), paths[1].clone())
 }
 
-#[derive(Debug)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Instruction {
     direction: Direction,
     steps: u32,
 }
 
-fn map_wire(world: &mut WorldMap<i32>, id: i32, path: &Vec<Instruction>) {
+fn follow_wire(instructions: &Vec<Instruction>) -> Vec<(i32, i32)> {
+    let mut path = Vec::<(i32, i32)>::new();
     let mut pos = (0, 0);
-    for instruction in path {
-        let mut s = instruction.steps;
-        let mv = match &instruction.direction {
-            Direction::Up => above,
-            Direction::Down => below,
-            Direction::Left => left_of,
-            Direction::Right => right_of,
-        };
-        while s > 0 {
-            pos = mv(pos);
-            world.update(pos, |x| match x {
-                Some(w) => {
-                    if *w < id {
-                        *w + id
-                    } else {
-                        *w
-                    }
-                }
-                None => id,
-            });
-            s -= 1;
-        }
-    }
-}
-
-fn above(pos: (i32, i32)) -> (i32, i32) {
-    let (x, y) = pos;
-    (x, y + 1)
-}
-fn below(pos: (i32, i32)) -> (i32, i32) {
-    let (x, y) = pos;
-    (x, y - 1)
-}
-fn left_of(pos: (i32, i32)) -> (i32, i32) {
-    let (x, y) = pos;
-    (x - 1, y)
-}
-fn right_of(pos: (i32, i32)) -> (i32, i32) {
-    let (x, y) = pos;
-    (x + 1, y)
-}
-
-#[derive(Debug)]
-struct WorldMap<T> {
-    terrain: HashMap<(i32, i32), T>,
-}
-
-impl<T> WorldMap<T> {
-    fn new() -> WorldMap<T> {
-        WorldMap::<T> {
-            terrain: HashMap::new(),
+    for i in instructions {
+        let mut s = 0;
+        while s < i.steps {
+            let (x, y) = pos;
+            pos = match i.direction {
+                Direction::Up => (x, y + 1),
+                Direction::Down => (x, y - 1),
+                Direction::Left => (x - 1, y),
+                Direction::Right => (x + 1, y),
+            };
+            path.push(pos);
+            s += 1;
         }
     }
 
-    fn update<F: Fn(Option<&T>) -> T>(&mut self, coord: (i32, i32), f: F) {
-        let v = self.terrain.get(&coord);
-        let new_v = f(v);
-        self.terrain.insert(coord, new_v);
-    }
+    return path;
 }
