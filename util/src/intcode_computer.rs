@@ -1,10 +1,10 @@
 #[derive(Debug)]
 struct IntcodeComputer {
-    memory: Vec<u32>,
+    memory: Vec<i32>,
     instruction_pointer: usize,
 }
 
-pub fn run(memory: Vec<u32>) -> u32 {
+pub fn run(memory: Vec<i32>) -> i32 {
     let mut computer = IntcodeComputer {
         memory: memory,
         instruction_pointer: 0,
@@ -16,6 +16,15 @@ pub fn run(memory: Vec<u32>) -> u32 {
             break computer.memory[0];
         }
     }
+
+    computer.memory[0]
+}
+
+pub fn parse(input: String) -> Vec<i32> {
+    input
+        .split(",")
+        .map(|s| s.parse::<i32>().expect("invalid input"))
+        .collect()
 }
 
 fn step(computer: &mut IntcodeComputer) {
@@ -30,17 +39,17 @@ fn step(computer: &mut IntcodeComputer) {
     };
 }
 
-fn binary_op<F: Fn(u32, u32) -> u32>(computer: &mut IntcodeComputer, op: F) {
+fn binary_op<F: Fn(i32, i32) -> i32>(computer: &mut IntcodeComputer, op: F) {
     let a = value_at_offset(computer, 1);
     let b = value_at_offset(computer, 2);
     set_at_offset(computer, 3, op(a, b));
     step_pointer(computer, 4);
 }
 
-fn value_at_offset(computer: &IntcodeComputer, offset: usize) -> u32 {
+fn value_at_offset(computer: &IntcodeComputer, offset: usize) -> i32 {
     computer.memory[computer.memory[computer.instruction_pointer + offset] as usize]
 }
-fn set_at_offset(computer: &mut IntcodeComputer, offset: usize, value: u32) {
+fn set_at_offset(computer: &mut IntcodeComputer, offset: usize, value: i32) {
     let ci = computer.memory[computer.instruction_pointer + offset];
     computer.memory[ci as usize] = value;
 }
