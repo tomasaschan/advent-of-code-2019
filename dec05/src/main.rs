@@ -15,11 +15,11 @@ fn main() {
 }
 
 fn solve_a(mut computer: IntcodeComputer) -> i32 {
-    computer.run(&mut repeat("1".to_owned()));
-    computer.stdout.last().unwrap().parse::<i32>().unwrap()
+    computer.run(&mut repeat(1));
+    computer.output.into_iter().last().unwrap()
 }
 
 fn solve_b(mut computer: IntcodeComputer) -> i32 {
-    computer.run(&mut once("5".to_owned()));
-    computer.stdout.last().unwrap().parse::<i32>().unwrap()
+    computer.run(&mut once(5));
+    computer.output.into_iter().last().unwrap()
 }

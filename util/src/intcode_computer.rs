@@ -5,7 +5,7 @@ use std::io::prelude::*;
 pub struct IntcodeComputer {
     memory: Vec<i32>,
     instruction_pointer: usize,
-    pub stdout: Vec<String>,
+    pub output: Vec<i32>,
     pub debug_mode: bool,
 }
 
@@ -22,7 +22,7 @@ impl IntcodeComputer {
         IntcodeComputer {
             memory: program,
             instruction_pointer: 0,
-            stdout: Vec::new(),
+            output: Vec::new(),
             debug_mode: false,
         }
     }
@@ -35,13 +35,13 @@ impl IntcodeComputer {
         self.memory[loc]
     }
 
-    pub fn run(&mut self, stdin: &mut dyn Iterator<Item = String>) {
+    pub fn run(&mut self, stdin: &mut dyn Iterator<Item = i32>) {
         while self.memory[self.instruction_pointer] != 99 {
             self.step(stdin);
         }
     }
 
-    fn step(&mut self, stdin: &mut dyn Iterator<Item = String>) {
+    fn step(&mut self, stdin: &mut dyn Iterator<Item = i32>) {
         let op = self.memory[self.instruction_pointer] % 100;
         let mode = self.memory[self.instruction_pointer] / 100;
         if self.debug_mode {
@@ -55,8 +55,8 @@ impl IntcodeComputer {
         match op {
             1 => self.binary_op(|a, b| a + b, mode),
             2 => self.binary_op(|a, b| a * b, mode),
-            3 => self.read(stdin),
-            4 => self.write(mode),
+            3 => self.slurp(stdin),
+            4 => self.out(mode),
             5 => self.jmp_if(true, mode),
             6 => self.jmp_if(false, mode),
             7 => self.cmp(|a, b| a < b, mode),
@@ -119,25 +119,22 @@ impl IntcodeComputer {
         self.step_pointer(4);
     }
 
-    fn read(&mut self, stdin: &mut dyn Iterator<Item = String>) {
-        let input = match stdin.next() {
+    fn slurp(&mut self, stdin: &mut dyn Iterator<Item = i32>) {
+        let value = match stdin.next() {
             Some(s) => s,
-            None => panic!("EOF when reading from stdin!"),
+            None => panic!("EOF when reading from input!"),
         };
 
-        let value = input
-            .parse::<i32>()
-            .expect(&format!("Failed to parse input {}", input).to_string());
         if self.debug_mode {
-            println!("read {} from stdin", value);
+            println!("read {} from input", value);
         }
         self.set_at_offset(1, value);
         self.step_pointer(2);
     }
 
-    fn write(&mut self, mode: i32) {
+    fn out(&mut self, mode: i32) {
         let v = self.value_at_offset(1, param_mode(mode, 0));
-        self.stdout.push(v.to_string());
+        self.output.push(v);
         if self.debug_mode {
             println!("wrote {} to stdout", v);
         }
