@@ -10,11 +10,8 @@ pub fn run(memory: Vec<i32>) -> i32 {
         instruction_pointer: 0,
     };
 
-    loop {
+    while computer.instruction_pointer != 99 {
         step(&mut computer);
-        if computer.memory[computer.instruction_pointer] == 99 {
-            break computer.memory[0];
-        }
     }
 
     computer.memory[0]
@@ -29,9 +26,7 @@ pub fn parse(input: String) -> Vec<i32> {
 
 fn step(computer: &mut IntcodeComputer) {
     let op = computer.memory[computer.instruction_pointer];
-    if op == 99 {
-        return;
-    }
+
     match op {
         1 => binary_op(computer, |a, b| a + b),
         2 => binary_op(computer, |a, b| a * b),
