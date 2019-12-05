@@ -25,31 +25,57 @@ pub fn parse(input: String) -> Vec<i32> {
 }
 
 fn step(computer: &mut IntcodeComputer) {
-    let op = computer.memory[computer.instruction_pointer];
+    let op = computer.memory[computer.instruction_pointer] % 100;
 
     match op {
-        1 => binary_op(computer, |a, b| a + b),
-        2 => binary_op(computer, |a, b| a * b),
+        1 => binary_op(computer, |a, b| a + b, op / 100),
+        2 => binary_op(computer, |a, b| a * b, op / 100),
         _ => panic!("invalid opcode {}", op),
     };
 }
 
-fn binary_op<F: Fn(i32, i32) -> i32>(computer: &mut IntcodeComputer, op: F) {
-    let a = value_at_offset(computer, 1);
-    let b = value_at_offset(computer, 2);
-    set_at_offset(computer, 3, op(a, b));
+fn binary_op<F: Fn(i32, i32) -> i32>(computer: &mut IntcodeComputer, op: F, mode: i32) {
+    let a = value_at_offset(computer, 1, param_mode(mode, 0));
+    let b = value_at_offset(computer, 2, param_mode(mode, 1));
+    set_at_offset(computer, 3, op(a, b), param_mode(mode, 2));
     step_pointer(computer, 4);
 }
 
-fn value_at_offset(computer: &IntcodeComputer, offset: usize) -> i32 {
-    computer.memory[computer.memory[computer.instruction_pointer + offset] as usize]
+fn value_at_offset(computer: &IntcodeComputer, offset: usize, mode: ParamMode) -> i32 {
+    let loc = match mode {
+        ParamMode::Position => computer.memory[computer.instruction_pointer + offset] as usize,
+        ParamMode::Immediate => computer.instruction_pointer + offset,
+    };
+    computer.memory[loc]
 }
-fn set_at_offset(computer: &mut IntcodeComputer, offset: usize, value: i32) {
-    let ci = computer.memory[computer.instruction_pointer + offset];
-    computer.memory[ci as usize] = value;
+fn set_at_offset(computer: &mut IntcodeComputer, offset: usize, value: i32, mode: ParamMode) {
+    let loc = match mode {
+        ParamMode::Position => computer.memory[computer.instruction_pointer + offset] as usize,
+        ParamMode::Immediate => computer.instruction_pointer + offset,
+    };
+    computer.memory[loc] = value;
 }
 fn step_pointer(computer: &mut IntcodeComputer, steps: usize) {
     computer.instruction_pointer = computer.instruction_pointer + steps;
+}
+
+#[derive(Debug)]
+enum ParamMode {
+    Immediate,
+    Position,
+}
+
+fn param_mode(mode: i32, n: usize) -> ParamMode {
+    let chars: Vec<char> = mode.to_string().chars().collect();
+    if n < chars.len() {
+        match chars[n] {
+            '0' => ParamMode::Position,
+            '1' => ParamMode::Immediate,
+            _ => panic!("invalid parameter mode {}", chars[n]),
+        }
+    } else {
+        ParamMode::Position
+    }
 }
 
 #[test]
