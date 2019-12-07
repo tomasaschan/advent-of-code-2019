@@ -1,21 +1,24 @@
-use util::intcode::IntcodeComputer;
+use util::intcode::Builder;
 use util::io::get_input;
 
 use std::iter::{once, repeat};
 
 fn main() {
-    let program = IntcodeComputer::parse_program(get_input());
-
-    println!("a: {:?}", solve_a(&program));
-    println!("b: {:?}", solve_b(&program));
+    let input = get_input();
+    println!("a: {:?}", solve_a(&input));
+    println!("b: {:?}", solve_b(&input));
 }
 
-fn solve_a(program: &Vec<i32>) -> i32 {
-    let output = IntcodeComputer::run_noninteractive(program, &mut repeat(1));
+fn solve_a(input: &String) -> i32 {
+    let output = Builder::new()
+        .parse(&input)
+        .run_noninteractive(&mut repeat(1));
     *output.last().unwrap()
 }
 
-fn solve_b(program: &Vec<i32>) -> i32 {
-    let output = IntcodeComputer::run_noninteractive(program, &mut once(5));
+fn solve_b(input: &String) -> i32 {
+    let output = Builder::new()
+        .parse(&input)
+        .run_noninteractive(&mut once(5));
     *output.last().unwrap()
 }

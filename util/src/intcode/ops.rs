@@ -1,17 +1,16 @@
 use super::IntcodeComputer;
 use std::fs::File;
 use std::io::prelude::*;
-use std::sync::mpsc::{Receiver, Sender};
 
 impl IntcodeComputer {
-  pub fn step(&mut self, input: &Receiver<i32>, output: &Sender<i32>) {
+  pub fn step(&mut self) {
     let op = self.memory[self.instruction_pointer] % 100;
     let mode = self.memory[self.instruction_pointer] / 100;
     match op {
       1 => self.binary_op(|a, b| a + b, mode),
       2 => self.binary_op(|a, b| a * b, mode),
-      3 => self.read(input),
-      4 => self.write(mode, output),
+      3 => self.read(),
+      4 => self.write(mode),
       5 => self.jmp_if(true, mode),
       6 => self.jmp_if(false, mode),
       7 => self.cmp(|a, b| a < b, mode),
@@ -53,15 +52,15 @@ impl IntcodeComputer {
     self.step_pointer(4);
   }
 
-  fn read(&mut self, input: &Receiver<i32>) {
-    let value = input.recv().expect("Failure when reading from input");
+  fn read(&mut self) {
+    let value = self.input.recv().expect("Failure when reading from input");
     self.set_at_offset(1, value);
     self.step_pointer(2);
   }
 
-  fn write(&mut self, mode: i32, output: &Sender<i32>) {
+  fn write(&mut self, mode: i32) {
     let v = self.value_at_offset(1, param_mode(mode, 0));
-    output.send(v).expect("Failure when writing to output");
+    self.output.send(v).expect("Failure when writing to output");
     self.step_pointer(2);
   }
   fn value_at_offset(&mut self, offset: usize, mode: ParamMode) -> i32 {

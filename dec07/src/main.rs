@@ -15,8 +15,6 @@ fn main() {
 }
 
 fn solve_a(input: String) -> i32 {
-    let program = IntcodeComputer::parse_program(input);
-
     let mut settings = vec![0, 1, 2, 3, 4];
     let permutations = Heap::new(&mut settings);
 
@@ -25,11 +23,10 @@ fn solve_a(input: String) -> i32 {
     for permutation in permutations {
         let mut signal = 0;
         for setting in permutation {
-            if let Some(s) = IntcodeComputer::run_noninteractive(
-                &program,
-                &mut once(setting).chain(once(signal)),
-            )
-            .last()
+            if let Some(s) = Builder::new()
+                .parse(&input)
+                .run_noninteractive(&mut once(setting).chain(once(signal)))
+                .last()
             {
                 signal = *s
             } else {

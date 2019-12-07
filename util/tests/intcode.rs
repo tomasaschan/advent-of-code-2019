@@ -2,11 +2,14 @@ use std::iter::{empty, once, repeat};
 use util::intcode::*;
 
 fn get_value_at_0(program: &Vec<i32>, input: &mut dyn Iterator<Item = i32>) -> i32 {
-  let output = IntcodeComputer::run_with_extras_noninteractive(&program, &vec![4, 0, 99], input);
+  let output = Builder::new()
+    .program(&program)
+    .exit_hook(&vec![4, 0, 99])
+    .run_noninteractive(input);
   *output.last().unwrap()
 }
 fn get_last_output(program: &Vec<i32>, input: &mut dyn Iterator<Item = i32>) -> i32 {
-  let output = IntcodeComputer::run_noninteractive(&program, input);
+  let output = Builder::new().program(&program).run_noninteractive(input);
   *output.last().unwrap()
 }
 

@@ -2,41 +2,40 @@ extern crate itertools;
 extern crate util;
 
 use itertools::Itertools;
-use std::iter::empty;
-use util::intcode::IntcodeComputer;
+use util::intcode::Builder;
 use util::io;
 
 fn main() {
     let input = io::get_input();
-    let program = IntcodeComputer::parse_program(input);
-
-    println!("a: {}", solve_a(program.clone()));
-    println!("b: {}", solve_b(program.clone()));
+    println!("a: {}", solve_a(&input));
+    println!("b: {}", solve_b(&input));
 }
 
-fn solve_a(mut program: Vec<i32>) -> i32 {
-    program[1] = 12;
-    program[2] = 2;
+fn solve_a(input: &String) -> i32 {
+    let output = Builder::new()
+        .parse(input)
+        .init_hook(&vec![3, 1, 3, 2, 99])
+        .exit_hook(&vec![4, 0, 99])
+        .run_noninteractive(&mut vec![12, 2].into_iter());
 
-    let output = run_and_read_0(&mut program);
-    output
+    *output.last().expect("No output from program")
 }
 
-fn solve_b(mut program: Vec<i32>) -> i32 {
+fn solve_b(input: &String) -> i32 {
+    let run_and_read_0 = |a, b| {
+        let output = Builder::new()
+            .parse(input)
+            .init_hook(&vec![3, 1, 3, 2, 99])
+            .exit_hook(&vec![4, 0, 99])
+            .run_noninteractive(&mut vec![a, b].into_iter());
+        *output.last().expect("No output from program")
+    };
+
     for (a, b) in (0..99).cartesian_product(0..99) {
-        program[1] = a;
-        program[2] = b;
-        let out = run_and_read_0(&mut program);
+        let out = run_and_read_0(a, b);
         if out == 19690720 {
             return 100 * a + b;
         }
     }
     panic!("found no solution");
-}
-
-fn run_and_read_0(program: &mut Vec<i32>) -> i32 {
-    let output =
-        IntcodeComputer::run_with_extras_noninteractive(&program, &vec![4, 0, 99], &mut empty());
-
-    *output.last().expect("No output from program")
 }
