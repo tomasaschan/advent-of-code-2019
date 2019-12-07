@@ -11,27 +11,32 @@ fn main() {
     let program = IntcodeComputer::parse_program(input);
 
     println!("a: {}", solve_a(program.clone()));
-    println!("b: {}", solve_b(&program.clone()));
+    println!("b: {}", solve_b(program.clone()));
 }
 
 fn solve_a(mut program: Vec<i32>) -> i32 {
     program[1] = 12;
     program[2] = 2;
-    let mut computer = IntcodeComputer::new(program);
-    computer.run(&mut empty());
-    computer.unsafe_read(0)
+
+    let output = run_and_read_0(&mut program);
+    output
 }
 
-fn solve_b(program: &Vec<i32>) -> i32 {
+fn solve_b(mut program: Vec<i32>) -> i32 {
     for (a, b) in (0..99).cartesian_product(0..99) {
-        let mut p = program.clone();
-        p[1] = a;
-        p[2] = b;
-        let mut computer = IntcodeComputer::new(p);
-        computer.run(&mut empty());
-        if computer.unsafe_read(0) == 19690720 {
+        program[1] = a;
+        program[2] = b;
+        let out = run_and_read_0(&mut program);
+        if out == 19690720 {
             return 100 * a + b;
         }
     }
     panic!("found no solution");
+}
+
+fn run_and_read_0(program: &mut Vec<i32>) -> i32 {
+    let output =
+        IntcodeComputer::run_with_extras_noninteractive(&program, &vec![4, 0, 99], &mut empty());
+
+    *output.last().expect("No output from program")
 }

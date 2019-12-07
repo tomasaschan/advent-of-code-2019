@@ -13,22 +13,19 @@ impl IntcodeComputer {
   }
 
   pub fn parse(input: String) -> IntcodeComputer {
-    IntcodeComputer::new(IntcodeComputer::parse_program(input))
+    IntcodeComputer::new(&IntcodeComputer::parse_program(input))
   }
 
-  pub fn new(program: Vec<i32>) -> IntcodeComputer {
+  pub fn new(program: &Vec<i32>) -> IntcodeComputer {
     IntcodeComputer {
       initial_memory: program.clone(),
-      memory: program,
+      memory: program.clone(),
       instruction_pointer: 0,
-      output: Vec::new(),
-      debug_mode: false,
     }
   }
 
   pub fn reset(&mut self) {
     self.memory = self.initial_memory.clone();
     self.instruction_pointer = 0;
-    self.output = Vec::new();
   }
 }

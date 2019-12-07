@@ -1,35 +1,17 @@
 use super::IntcodeComputer;
 use std::fs::File;
 use std::io::prelude::*;
+use std::sync::mpsc::{Receiver, Sender};
 
 impl IntcodeComputer {
-  pub fn unsafe_read(&self, loc: usize) -> i32 {
-    self.memory[loc]
-  }
-
-  pub fn run(&mut self, stdin: &mut dyn Iterator<Item = i32>) -> Option<&i32> {
-    while self.memory[self.instruction_pointer] != 99 {
-      self.step(stdin);
-    }
-    self.output.last()
-  }
-
-  fn step(&mut self, stdin: &mut dyn Iterator<Item = i32>) {
+  pub fn step(&mut self, input: &Receiver<i32>, output: &Sender<i32>) {
     let op = self.memory[self.instruction_pointer] % 100;
     let mode = self.memory[self.instruction_pointer] / 100;
-    if self.debug_mode {
-      println!(
-        "at {}: handling {:?} with mode {}",
-        self.instruction_pointer,
-        self.memory[self.instruction_pointer..self.instruction_pointer + 4].to_vec(),
-        mode
-      );
-    }
     match op {
       1 => self.binary_op(|a, b| a + b, mode),
       2 => self.binary_op(|a, b| a * b, mode),
-      3 => self.slurp(stdin),
-      4 => self.out(mode),
+      3 => self.read(input),
+      4 => self.write(mode, output),
       5 => self.jmp_if(true, mode),
       6 => self.jmp_if(false, mode),
       7 => self.cmp(|a, b| a < b, mode),
@@ -57,25 +39,8 @@ impl IntcodeComputer {
 
     if t ^ (a == 0) {
       let p = self.value_at_offset(2, param_mode(mode, 1));
-      if self.debug_mode {
-        println!(
-          "jump if {}; {} {} 0; jumping to {}",
-          t,
-          a,
-          if t { "!=" } else { "==" },
-          p
-        );
-      }
       self.instruction_pointer = p as usize;
     } else {
-      if self.debug_mode {
-        println!(
-          "jump if {}; {} {} 0; not jumping",
-          t,
-          a,
-          if t { "==" } else { "!=" }
-        );
-      }
       self.step_pointer(3);
     }
   }
@@ -88,25 +53,15 @@ impl IntcodeComputer {
     self.step_pointer(4);
   }
 
-  fn slurp(&mut self, stdin: &mut dyn Iterator<Item = i32>) {
-    let value = match stdin.next() {
-      Some(s) => s,
-      None => panic!("EOF when reading from input!"),
-    };
-
-    if self.debug_mode {
-      println!("read {} from input", value);
-    }
+  fn read(&mut self, input: &Receiver<i32>) {
+    let value = input.recv().expect("Failure when reading from input");
     self.set_at_offset(1, value);
     self.step_pointer(2);
   }
 
-  fn out(&mut self, mode: i32) {
+  fn write(&mut self, mode: i32, output: &Sender<i32>) {
     let v = self.value_at_offset(1, param_mode(mode, 0));
-    self.output.push(v);
-    if self.debug_mode {
-      println!("wrote {} to stdout", v);
-    }
+    output.send(v).expect("Failure when writing to output");
     self.step_pointer(2);
   }
   fn value_at_offset(&mut self, offset: usize, mode: ParamMode) -> i32 {
@@ -114,22 +69,18 @@ impl IntcodeComputer {
       ParamMode::Position => self.memory[self.instruction_pointer + offset] as usize,
       ParamMode::Immediate => self.instruction_pointer + offset,
     };
-    let value = self.memory[loc];
-    if self.debug_mode {
-      println!("read {} from {}", value, loc);
-    }
-    value
+    self.memory[loc]
   }
   fn set_at_offset(&mut self, offset: usize, value: i32) {
     let loc = self.memory[self.instruction_pointer + offset] as usize;
     self.memory[loc] = value;
-    if self.debug_mode {
-      println!("wrote {} to {}", value, loc);
-    }
   }
 
   fn step_pointer(&mut self, steps: usize) {
     self.instruction_pointer = self.instruction_pointer + steps;
+  }
+  pub fn set_pointer(&mut self, loc: usize) {
+    self.instruction_pointer = loc;
   }
 }
 
