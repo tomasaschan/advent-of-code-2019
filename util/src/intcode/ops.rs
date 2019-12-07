@@ -7,10 +7,11 @@ impl IntcodeComputer {
     self.memory[loc]
   }
 
-  pub fn run(&mut self, stdin: &mut dyn Iterator<Item = i32>) {
+  pub fn run(&mut self, stdin: &mut dyn Iterator<Item = i32>) -> Option<&i32> {
     while self.memory[self.instruction_pointer] != 99 {
       self.step(stdin);
     }
+    self.output.last()
   }
 
   fn step(&mut self, stdin: &mut dyn Iterator<Item = i32>) {

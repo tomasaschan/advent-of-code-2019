@@ -4,7 +4,11 @@ impl IntcodeComputer {
   pub fn parse_program(input: String) -> Vec<i32> {
     input
       .split(",")
-      .map(|s| s.parse::<i32>().expect("invalid input"))
+      .filter(|s| s.len() > 0)
+      .map(|s| {
+        s.parse::<i32>()
+          .expect(&format!("invalid instruction: '{}'", s))
+      })
       .collect()
   }
 
@@ -20,5 +24,11 @@ impl IntcodeComputer {
       output: Vec::new(),
       debug_mode: false,
     }
+  }
+
+  pub fn reset(&mut self) {
+    self.memory = self.initial_memory.clone();
+    self.instruction_pointer = 0;
+    self.output = Vec::new();
   }
 }
