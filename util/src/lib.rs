@@ -1,3 +1,3 @@
-pub mod intcode_computer;
+pub mod intcode;
 pub mod io;
 pub mod map_2d;

@@ -1,19 +1,19 @@
 use std::iter::{empty, once, repeat};
-use util::intcode_computer::*;
+use util::intcode::*;
 
 #[test]
 fn addmul_tests() {
   let mut computer = IntcodeComputer::new([1, 9, 10, 3, 2, 3, 11, 0, 99, 30, 40, 50].to_vec());
   computer.run(&mut empty());
-  assert_eq!(computer.get_at(0), 3500);
+  assert_eq!(computer.unsafe_read(0), 3500);
 
   computer = IntcodeComputer::new([1, 0, 0, 0, 99].to_vec());
   computer.run(&mut empty());
-  assert_eq!(computer.get_at(0), 2);
+  assert_eq!(computer.unsafe_read(0), 2);
 
   computer = IntcodeComputer::new([1, 1, 1, 4, 99, 5, 6, 0, 99].to_vec());
   computer.run(&mut empty());
-  assert_eq!(computer.get_at(0), 30);
+  assert_eq!(computer.unsafe_read(0), 30);
 }
 
 #[test]
