@@ -1,5 +1,5 @@
+use intcode::Builder;
 use itertools::Itertools;
-use util::intcode::Builder;
 
 pub fn solve_a(input: &String) -> i32 {
     let output = Builder::new()

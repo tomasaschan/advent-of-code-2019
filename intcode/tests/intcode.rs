@@ -1,5 +1,5 @@
+use intcode::*;
 use std::iter::{empty, once, repeat};
-use util::intcode::*;
 
 fn get_value_at_0(program: &Vec<i32>, input: &mut dyn Iterator<Item = i32>) -> i32 {
   let output = Builder::new()

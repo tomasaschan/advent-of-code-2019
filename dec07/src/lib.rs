@@ -1,7 +1,7 @@
+use intcode::Builder;
 use permutohedron::Heap;
 use std::sync::mpsc::{channel, Receiver, Sender, TryRecvError};
 use std::thread;
-use util::intcode::Builder;
 
 pub fn solve_a(input: &String) -> i32 {
     find_best_config([0, 1, 2, 3, 4], |s| run_without_feedback(&input, s))

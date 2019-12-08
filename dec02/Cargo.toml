@@ -8,4 +8,5 @@ edition = "2018"
 
 [dependencies]
 util = { path = "../util" }
+intcode = { path="../intcode" }
 itertools = "0.8.2"

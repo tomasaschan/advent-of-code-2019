@@ -1,5 +1,5 @@
+use intcode::Builder;
 use std::iter::{once, repeat};
-use util::intcode::Builder;
 
 pub fn solve_a(input: &String) -> i32 {
     let output = Builder::new()
