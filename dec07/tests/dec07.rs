@@ -1,5 +1,4 @@
 use aoc_2019_07::*;
-use permutohedron::Heap;
 use util::io::read_file;
 
 #[test]
