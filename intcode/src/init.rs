@@ -1,32 +1,63 @@
 use super::IntcodeComputer;
+use std::collections::HashMap;
+use std::iter::FromIterator;
 use std::sync::mpsc::{Receiver, Sender};
 
 impl IntcodeComputer {
     fn build_memory(
-        program: &Vec<i32>,
-        init_hook: &Option<Vec<i32>>,
-        exit_hook: &Option<Vec<i32>>,
-    ) -> Vec<i32> {
+        program: &Vec<i128>,
+        init_hook: &Option<Vec<i128>>,
+        exit_hook: &Option<Vec<i128>>,
+    ) -> HashMap<i128, i128> {
         match (init_hook, exit_hook) {
-            (Some(init), Some(exit)) => [&program[..], &init[..], &exit[..]].concat(),
-            (Some(init), None) => [&program[..], &init[..]].concat(),
-            (None, Some(exit)) => [&program[..], &exit[..]].concat(),
-            (None, None) => program.clone(),
+            (Some(init), Some(exit)) => HashMap::from_iter(
+                [&init[..], &exit[..], &[0], &program[..]]
+                    .concat()
+                    .iter()
+                    .enumerate()
+                    .map(|(i, x)| {
+                        (
+                            (i as i128 - init.len() as i128 - exit.len() as i128 - 1),
+                            *x,
+                        )
+                    }),
+            ),
+            (Some(init), None) => HashMap::from_iter(
+                [&init[..], &[0], &program[..]]
+                    .concat()
+                    .iter()
+                    .enumerate()
+                    .map(|(i, x)| ((i as i128 - init.len() as i128 - 1), *x)),
+            ),
+            (None, Some(exit)) => HashMap::from_iter(
+                [&exit[..], &[0], &program[..]]
+                    .concat()
+                    .iter()
+                    .enumerate()
+                    .map(|(i, x)| ((i as i128 - exit.len() as i128 - 1), *x)),
+            ),
+            (None, None) => HashMap::from_iter(
+                [&[0], &program[..]]
+                    .concat()
+                    .iter()
+                    .enumerate()
+                    .map(|(i, x)| ((i as i128 - 1), *x)),
+            ),
         }
     }
 
     pub fn new(
-        program: &Vec<i32>,
-        init_hook: Option<Vec<i32>>,
-        exit_hook: Option<Vec<i32>>,
-        input: Receiver<i32>,
-        output: Sender<i32>,
+        program: &Vec<i128>,
+        init_hook: Option<Vec<i128>>,
+        exit_hook: Option<Vec<i128>>,
+        input: Receiver<i128>,
+        output: Sender<i128>,
     ) -> IntcodeComputer {
         let mut computer = IntcodeComputer {
             program: program.clone(),
             init_hook,
             exit_hook,
-            memory: Vec::new(),
+            memory: HashMap::new(),
             instruction_pointer: 0,
             input,
             output,

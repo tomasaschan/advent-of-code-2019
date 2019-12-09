@@ -3,15 +3,15 @@ use permutohedron::Heap;
 use std::sync::mpsc::{channel, Receiver, Sender, TryRecvError};
 use std::thread;
 
-pub fn solve_a(input: &String) -> i32 {
+pub fn solve_a(input: &String) -> i128 {
     find_best_config([0, 1, 2, 3, 4], |s| run_without_feedback(&input, s))
 }
 
-pub fn solve_b(input: &String) -> i32 {
+pub fn solve_b(input: &String) -> i128 {
     find_best_config([5, 6, 7, 8, 9], |s| run_with_feedback(&input, s))
 }
 
-fn find_best_config<F: Fn([i32; 5]) -> i32>(mut settings: [i32; 5], runner: F) -> i32 {
+fn find_best_config<F: Fn([i128; 5]) -> i128>(mut settings: [i128; 5], runner: F) -> i128 {
     let permutations = Heap::new(&mut settings);
 
     let mut max_output = 0;
@@ -25,7 +25,7 @@ fn find_best_config<F: Fn([i32; 5]) -> i32>(mut settings: [i32; 5], runner: F) -
     max_output
 }
 
-fn run_without_feedback(input: &String, settings: [i32; 5]) -> i32 {
+fn run_without_feedback(input: &String, settings: [i128; 5]) -> i128 {
     let (i, o, q) = create_amp_array(input, settings);
     i.send(0).expect("Failed to send initialization message.");
 
@@ -40,7 +40,7 @@ fn run_without_feedback(input: &String, settings: [i32; 5]) -> i32 {
     }
 }
 
-fn run_with_feedback(input: &String, settings: [i32; 5]) -> i32 {
+fn run_with_feedback(input: &String, settings: [i128; 5]) -> i128 {
     let (i, o, q) = create_amp_array(input, settings);
     i.send(0).expect("Failed to send initialization message.");
 
@@ -56,8 +56,8 @@ fn run_with_feedback(input: &String, settings: [i32; 5]) -> i32 {
 
 fn create_amp_array(
     input: &String,
-    settings: [i32; 5],
-) -> (Sender<i32>, Receiver<i32>, Receiver<i32>) {
+    settings: [i128; 5],
+) -> (Sender<i128>, Receiver<i128>, Receiver<i128>) {
     let (ain_tx, ain_rx) = channel();
     let (aout_tx, aout_rx) = channel();
     let (bin_tx, bin_rx) = channel();
@@ -90,22 +90,22 @@ fn create_amp_array(
     (ain_tx, eout_rx, a_quit_rx)
 }
 
-fn forward_with_end_signal(from: Receiver<i32>, to: Sender<i32>, end_signal: Sender<i32>) {
+fn forward_with_end_signal(from: Receiver<i128>, to: Sender<i128>, end_signal: Sender<i128>) {
     thread::spawn(move || {
         for msg in from.iter() {
             to.send(msg).expect("Failed to forward message");
         }
         end_signal
-            .send(std::i32::MIN)
+            .send(std::i128::MIN)
             .expect("Failed to send quit signal");
     });
 }
 
 fn feed_back(
-    from: Receiver<i32>,
-    to: Sender<i32>,
-    alternate: Sender<i32>,
-    end_signal: Receiver<i32>,
+    from: Receiver<i128>,
+    to: Sender<i128>,
+    alternate: Sender<i128>,
+    end_signal: Receiver<i128>,
 ) {
     thread::spawn(move || {
         for msg in from.iter() {

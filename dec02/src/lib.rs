@@ -1,7 +1,7 @@
 use intcode::Builder;
 use itertools::Itertools;
 
-pub fn solve_a(input: &String) -> i32 {
+pub fn solve_a(input: &String) -> i128 {
     let output = Builder::new()
         .parse(input)
         .init_hook(&vec![3, 1, 3, 2, 99])
@@ -11,7 +11,7 @@ pub fn solve_a(input: &String) -> i32 {
     *output.last().expect("No output from program")
 }
 
-pub fn solve_b(input: &String) -> i32 {
+pub fn solve_b(input: &String) -> i128 {
     let run_and_read_0 = |a, b| {
         let output = Builder::new()
             .parse(input)

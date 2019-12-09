@@ -4,8 +4,8 @@ use std::io::prelude::*;
 
 impl IntcodeComputer {
   pub fn step(&mut self) {
-    let op = self.memory[self.instruction_pointer] % 100;
-    let mode = self.memory[self.instruction_pointer] / 100;
+    let op = self.memory.get(&self.instruction_pointer).unwrap_or(&0) % 100;
+    let mode = self.memory.get(&self.instruction_pointer).unwrap_or(&0) / 100;
     match op {
       1 => self.binary_op(|a, b| a + b, mode),
       2 => self.binary_op(|a, b| a * b, mode),
@@ -27,24 +27,24 @@ impl IntcodeComputer {
     };
   }
 
-  fn binary_op<F: Fn(i32, i32) -> i32>(&mut self, op: F, mode: i32) {
+  fn binary_op<F: Fn(i128, i128) -> i128>(&mut self, op: F, mode: i128) {
     let a = self.value_at_offset(1, param_mode(mode, 0));
     let b = self.value_at_offset(2, param_mode(mode, 1));
     self.set_at_offset(3, op(a, b));
     self.step_pointer(4);
   }
-  fn jmp_if(&mut self, t: bool, mode: i32) {
+  fn jmp_if(&mut self, t: bool, mode: i128) {
     let a = self.value_at_offset(1, param_mode(mode, 0));
 
     if t ^ (a == 0) {
       let p = self.value_at_offset(2, param_mode(mode, 1));
-      self.instruction_pointer = p as usize;
+      self.instruction_pointer = p;
     } else {
       self.step_pointer(3);
     }
   }
 
-  fn cmp<F: Fn(i32, i32) -> bool>(&mut self, comparer: F, mode: i32) {
+  fn cmp<F: Fn(i128, i128) -> bool>(&mut self, comparer: F, mode: i128) {
     let a = self.value_at_offset(1, param_mode(mode, 0));
     let b = self.value_at_offset(2, param_mode(mode, 1));
 
@@ -58,27 +58,33 @@ impl IntcodeComputer {
     self.step_pointer(2);
   }
 
-  fn write(&mut self, mode: i32) {
+  fn write(&mut self, mode: i128) {
     let v = self.value_at_offset(1, param_mode(mode, 0));
     self.output.send(v).expect("Failure when writing to output");
     self.step_pointer(2);
   }
-  fn value_at_offset(&mut self, offset: usize, mode: ParamMode) -> i32 {
+  fn value_at_offset(&mut self, offset: i128, mode: ParamMode) -> i128 {
     let loc = match mode {
-      ParamMode::Position => self.memory[self.instruction_pointer + offset] as usize,
+      ParamMode::Position => *self
+        .memory
+        .get(&(self.instruction_pointer + offset))
+        .unwrap_or(&0),
       ParamMode::Immediate => self.instruction_pointer + offset,
     };
-    self.memory[loc]
+    *self.memory.get(&loc).unwrap_or(&0)
   }
-  fn set_at_offset(&mut self, offset: usize, value: i32) {
-    let loc = self.memory[self.instruction_pointer + offset] as usize;
-    self.memory[loc] = value;
+  fn set_at_offset(&mut self, offset: i128, value: i128) {
+    let loc = *self
+      .memory
+      .get(&(self.instruction_pointer + offset))
+      .unwrap_or(&0);
+    self.memory.insert(loc, value);
   }
 
-  fn step_pointer(&mut self, steps: usize) {
+  fn step_pointer(&mut self, steps: i128) {
     self.instruction_pointer = self.instruction_pointer + steps;
   }
-  pub fn set_pointer(&mut self, loc: usize) {
+  pub fn set_pointer(&mut self, loc: i128) {
     self.instruction_pointer = loc;
   }
 }
@@ -89,7 +95,7 @@ enum ParamMode {
   Position,
 }
 
-fn param_mode(mut mode: i32, mut n: usize) -> ParamMode {
+fn param_mode(mut mode: i128, mut n: i128) -> ParamMode {
   loop {
     if n == 0 {
       break match mode % 10 {
