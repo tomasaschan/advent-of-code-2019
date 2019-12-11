@@ -88,6 +88,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "aoc-2019-11"
+version = "0.1.0"
+dependencies = [
+ "intcode 0.1.0",
+ "util 0.1.0",
+]
+
+[[package]]
 name = "arrayref"
 version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -11,6 +11,7 @@ if ! [ -d dec$1 ]; then
 intcode = { path = \"../intcode\" }" >> dec$1/Cargo.toml
 
   printf "use aoc_2019_$1::solve_a;
+// use aoc_2019_$1::solve_b;
 use util::io::get_input;
 
 fn main() {
