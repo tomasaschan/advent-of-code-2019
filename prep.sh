@@ -7,7 +7,8 @@ set -Eueo pipefail
 if ! [ -d dec$1 ]; then
   cargo new dec$1
   sed -i -e "s/name = \"dec$1\"/name = \"aoc-2019-$1\"/" dec$1/Cargo.toml
-  echo "util = { path = \"../util\" }" >> dec$1/Cargo.toml
+  echo "util = { path = \"../util\" }
+intcode = { path = \"../intcode\" }" >> dec$1/Cargo.toml
 
   printf "use aoc_2019_$1::solve_a;
 use util::io::get_input;
@@ -19,7 +20,7 @@ fn main() {
     //println!(\"b: {}\", solve_b(&input));
 }
 " > dec$1/src/main.rs
-  printf "pub fn solve_a(input: &String) -> i32 {
+  printf "pub fn solve_a(input: &String) -> i128 {
     0
 }
 " > dec$1/src/lib.rs

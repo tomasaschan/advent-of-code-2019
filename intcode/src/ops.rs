@@ -2,6 +2,8 @@ use super::IntcodeComputer;
 use std::fs::File;
 use std::io::prelude::*;
 
+const RELATIVE_BASE_ADDR: i128 = -1;
+
 impl IntcodeComputer {
   pub fn step(&mut self) {
     let op = self.memory.get(&self.instruction_pointer).unwrap_or(&0) % 100;
@@ -9,12 +11,13 @@ impl IntcodeComputer {
     match op {
       1 => self.binary_op(|a, b| a + b, mode),
       2 => self.binary_op(|a, b| a * b, mode),
-      3 => self.read(),
+      3 => self.read(mode),
       4 => self.write(mode),
       5 => self.jmp_if(true, mode),
       6 => self.jmp_if(false, mode),
       7 => self.cmp(|a, b| a < b, mode),
       8 => self.cmp(|a, b| a == b, mode),
+      9 => self.set_rel_base(mode),
       _ => {
         let mut buffer =
           File::create("core.dump").expect("core dump failed; could not create file core.dump.");
@@ -30,7 +33,7 @@ impl IntcodeComputer {
   fn binary_op<F: Fn(i128, i128) -> i128>(&mut self, op: F, mode: i128) {
     let a = self.value_at_offset(1, param_mode(mode, 0));
     let b = self.value_at_offset(2, param_mode(mode, 1));
-    self.set_at_offset(3, op(a, b));
+    self.set_at_offset(3, op(a, b), param_mode(mode, 2));
     self.step_pointer(4);
   }
   fn jmp_if(&mut self, t: bool, mode: i128) {
@@ -48,13 +51,20 @@ impl IntcodeComputer {
     let a = self.value_at_offset(1, param_mode(mode, 0));
     let b = self.value_at_offset(2, param_mode(mode, 1));
 
-    self.set_at_offset(3, if comparer(a, b) { 1 } else { 0 });
+    self.set_at_offset(3, if comparer(a, b) { 1 } else { 0 }, param_mode(mode, 2));
     self.step_pointer(4);
   }
 
-  fn read(&mut self) {
+  fn set_rel_base(&mut self, mode: i128) {
+    let prev = *self.memory.get(&RELATIVE_BASE_ADDR).unwrap_or(&0);
+    let diff = self.value_at_offset(1, param_mode(mode, 0));
+    self.memory.insert(RELATIVE_BASE_ADDR, prev + diff);
+    self.step_pointer(2);
+  }
+
+  fn read(&mut self, mode: i128) {
     let value = self.input.recv().expect("Failure when reading from input");
-    self.set_at_offset(1, value);
+    self.set_at_offset(1, value, param_mode(mode, 0));
     self.step_pointer(2);
   }
 
@@ -70,14 +80,34 @@ impl IntcodeComputer {
         .get(&(self.instruction_pointer + offset))
         .unwrap_or(&0),
       ParamMode::Immediate => self.instruction_pointer + offset,
+      ParamMode::Relative => {
+        self.memory.get(&(RELATIVE_BASE_ADDR)).unwrap_or(&0)
+          + self
+            .memory
+            .get(&(self.instruction_pointer + offset))
+            .unwrap_or(&0)
+      }
     };
     *self.memory.get(&loc).unwrap_or(&0)
   }
-  fn set_at_offset(&mut self, offset: i128, value: i128) {
-    let loc = *self
-      .memory
-      .get(&(self.instruction_pointer + offset))
-      .unwrap_or(&0);
+  fn set_at_offset(&mut self, offset: i128, value: i128, mode: ParamMode) {
+    let loc = match mode {
+      ParamMode::Position => *self
+        .memory
+        .get(&(self.instruction_pointer + offset))
+        .unwrap_or(&0),
+      ParamMode::Relative => {
+        *self.memory.get(&(RELATIVE_BASE_ADDR)).unwrap_or(&0)
+          + *self
+            .memory
+            .get(&(self.instruction_pointer + offset))
+            .unwrap_or(&0)
+      }
+      ParamMode::Immediate => panic!(
+        "Tried to write in immediate mode! IP: {}",
+        self.instruction_pointer
+      ),
+    };
     self.memory.insert(loc, value);
   }
 
@@ -93,6 +123,7 @@ impl IntcodeComputer {
 enum ParamMode {
   Immediate,
   Position,
+  Relative,
 }
 
 fn param_mode(mut mode: i128, mut n: i128) -> ParamMode {
@@ -101,7 +132,8 @@ fn param_mode(mut mode: i128, mut n: i128) -> ParamMode {
       break match mode % 10 {
         0 => ParamMode::Position,
         1 => ParamMode::Immediate,
-        _ => panic!("invalid parameter mode {}", n),
+        2 => ParamMode::Relative,
+        _ => panic!("invalid parameter mode {}", mode),
       };
     }
     mode /= 10;
