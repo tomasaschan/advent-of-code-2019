@@ -1,5 +1,4 @@
 use intcode::Builder;
-use std::sync::mpsc::channel;
 use util::map_2d::*;
 
 pub fn solve_a(input: &String) -> i128 {
@@ -34,19 +33,16 @@ pub fn solve_b(input: &String) -> (i128) {
 }
 
 pub fn paint_hull(map: &mut WorldMap<i128>, start: i128, program: &String) {
-    let (in_tx, in_rx) = channel();
-    let (out_tx, out_rx) = channel();
-
-    Builder::new().parse(program).run(in_rx, out_tx);
+    let (input, output) = Builder::new().parse(program).run();
 
     let mut pos = (0, 0);
     let mut dir = Direction::Up;
 
-    in_tx.send(start).unwrap();
+    input.send(start).unwrap();
 
     loop {
-        let clr = out_rx.recv().expect("error getting color");
-        let trn = out_rx.recv().expect("error getting turn");
+        let clr = output.recv().expect("error getting color");
+        let trn = output.recv().expect("error getting turn");
 
         map.update(pos, |_| clr);
         dir = match trn {
@@ -57,7 +53,7 @@ pub fn paint_hull(map: &mut WorldMap<i128>, start: i128, program: &String) {
         pos = move_to(&dir, pos);
 
         let new_clr = map.get(&pos).unwrap_or(&0);
-        match in_tx.send(*new_clr) {
+        match input.send(*new_clr) {
             Ok(_) => (),
             Err(_) => break,
         }

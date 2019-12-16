@@ -58,36 +58,28 @@ fn create_amp_array(
     input: &String,
     settings: [i128; 5],
 ) -> (Sender<i128>, Receiver<i128>, Receiver<i128>) {
-    let (ain_tx, ain_rx) = channel();
-    let (aout_tx, aout_rx) = channel();
-    let (bin_tx, bin_rx) = channel();
+    let (ain, aout) = Builder::new().parse(input).run();
+    let (bin, bout) = Builder::new().parse(input).run();
+    let (cin, cout) = Builder::new().parse(input).run();
+    let (din, dout) = Builder::new().parse(input).run();
+    let (ein, eout) = Builder::new().parse(input).run();
+
     let (a_quit_tx, a_quit_rx) = channel();
-    let (bc_tx, bc_rx) = channel();
-    let (cd_tx, cd_rx) = channel();
-    let (de_tx, de_rx) = channel();
-    let (eout_tx, eout_rx) = channel();
-    ain_tx
-        .send(settings[0])
+    ain.send(settings[0])
         .expect("Failed to set phase on amplifier A");
-    bin_tx
-        .send(settings[1])
+    bin.send(settings[1])
         .expect("Failed to set phase on amplifier B");
-    bc_tx
-        .send(settings[2])
+    cin.send(settings[2])
         .expect("Failed to set phase on amplifier C");
-    cd_tx
-        .send(settings[3])
+    din.send(settings[3])
         .expect("Failed to set phase on amplifier D");
-    de_tx
-        .send(settings[4])
+    ein.send(settings[4])
         .expect("Failed to set phase on amplifier E");
-    forward_with_end_signal(aout_rx, bin_tx, a_quit_tx);
-    Builder::new().parse(input).run(ain_rx, aout_tx);
-    Builder::new().parse(input).run(bin_rx, bc_tx);
-    Builder::new().parse(input).run(bc_rx, cd_tx);
-    Builder::new().parse(input).run(cd_rx, de_tx);
-    Builder::new().parse(input).run(de_rx, eout_tx);
-    (ain_tx, eout_rx, a_quit_rx)
+    forward_with_end_signal(aout, bin, a_quit_tx);
+    pipe(bout, cin);
+    pipe(cout, din);
+    pipe(dout, ein);
+    (ain, eout, a_quit_rx)
 }
 
 fn forward_with_end_signal(from: Receiver<i128>, to: Sender<i128>, end_signal: Sender<i128>) {
@@ -116,6 +108,14 @@ fn feed_back(
                 Err(TryRecvError::Empty) => to.send(msg).expect("Failed to forward message"),
                 Err(TryRecvError::Disconnected) => panic!("End signal disconnected"),
             }
+        }
+    });
+}
+
+fn pipe(from: Receiver<i128>, to: Sender<i128>) {
+    thread::spawn(move || {
+        for msg in from.iter() {
+            to.send(msg).expect("Failed to forward message");
         }
     });
 }
