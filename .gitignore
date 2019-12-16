@@ -2,3 +2,4 @@
 **/*.rs.bk
 *.secret
 *.dump
+.intcode_hist
