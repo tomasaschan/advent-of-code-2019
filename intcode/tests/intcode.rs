@@ -4,7 +4,7 @@ use std::iter::{empty, once, repeat};
 fn get_value_at_0(program: &Vec<i128>, input: &mut dyn Iterator<Item = i128>) -> i128 {
   let output = Builder::new()
     .program(&program)
-    .exit_hook(&vec![4, 0, 99])
+    .exit_hook(vec![4, 0, 99])
     .run_noninteractive(input);
   *output.last().unwrap()
 }
