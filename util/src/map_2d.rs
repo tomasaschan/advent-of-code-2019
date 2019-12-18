@@ -1,7 +1,8 @@
+use std::clone::Clone;
 use std::collections::HashMap;
 use std::iter::FromIterator;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WorldMap<T> {
     terrain: HashMap<(i32, i32), T>,
 }
@@ -17,6 +18,10 @@ impl<T> WorldMap<T> {
         let v = self.terrain.get(&coord);
         let new_v = f(v);
         self.terrain.insert(coord, new_v);
+    }
+
+    pub fn insert(&mut self, coord: (i32, i32), value: T) {
+        self.terrain.insert(coord, value);
     }
 
     pub fn get(&self, coord: &(i32, i32)) -> Option<&T> {
@@ -48,6 +53,17 @@ impl<T> WorldMap<T> {
         ((xmin, ymin), (xmax, ymax))
     }
 }
+
+impl<T: PartialEq> WorldMap<T> {
+    pub fn find(&self, needle: T) -> Vec<(i32, i32)> {
+        self.terrain
+            .iter()
+            .filter(|(_, v)| *v == &needle)
+            .map(|(coord, _)| *coord)
+            .collect()
+    }
+}
+
 pub fn above(pos: (i32, i32)) -> (i32, i32) {
     let (x, y) = pos;
     (x, y + 1)
@@ -64,7 +80,12 @@ pub fn right_of(pos: (i32, i32)) -> (i32, i32) {
     let (x, y) = pos;
     (x + 1, y)
 }
-pub fn turn_left(d: &Direction) -> Direction {
+
+pub fn turn_around(d: Direction) -> Direction {
+    turn_left(turn_left(d))
+}
+
+pub fn turn_left(d: Direction) -> Direction {
     match d {
         Direction::Up => Direction::Left,
         Direction::Left => Direction::Down,
@@ -72,7 +93,7 @@ pub fn turn_left(d: &Direction) -> Direction {
         Direction::Right => Direction::Up,
     }
 }
-pub fn turn_right(d: &Direction) -> Direction {
+pub fn turn_right(d: Direction) -> Direction {
     match d {
         Direction::Up => Direction::Right,
         Direction::Right => Direction::Down,
@@ -80,7 +101,7 @@ pub fn turn_right(d: &Direction) -> Direction {
         Direction::Left => Direction::Up,
     }
 }
-pub fn move_to(d: &Direction, p: (i32, i32)) -> (i32, i32) {
+pub fn move_to(d: Direction, p: (i32, i32)) -> (i32, i32) {
     match d {
         Direction::Up => above(p),
         Direction::Left => left_of(p),
@@ -89,10 +110,21 @@ pub fn move_to(d: &Direction, p: (i32, i32)) -> (i32, i32) {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum Direction {
     Up,
     Down,
     Left,
     Right,
+}
+
+impl Direction {
+    pub fn all() -> Vec<Direction> {
+        vec![
+            Direction::Up,
+            Direction::Right,
+            Direction::Down,
+            Direction::Left,
+        ]
+    }
 }

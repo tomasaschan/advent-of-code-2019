@@ -1,5 +1,8 @@
 use super::{memory::Memory, IntcodeComputer};
-use std::sync::mpsc::{Receiver, Sender};
+use std::{
+    sync::mpsc::{Receiver, Sender},
+    time::Duration,
+};
 
 impl IntcodeComputer {
     pub fn new(
@@ -9,6 +12,7 @@ impl IntcodeComputer {
         input_hook: Option<Vec<i128>>,
         input: Receiver<i128>,
         output: Sender<i128>,
+        input_timeout: Option<Duration>,
     ) -> IntcodeComputer {
         let mut computer = IntcodeComputer {
             program: program.clone(),
@@ -19,6 +23,7 @@ impl IntcodeComputer {
             instruction_pointer: 0,
             input,
             output,
+            input_timeout,
         };
         computer.reset();
         computer

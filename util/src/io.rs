@@ -12,6 +12,14 @@ pub fn get_input() -> String {
     return input.trim().to_string();
 }
 
+pub fn get_first_line() -> String {
+    let mut input = String::new();
+    io::stdin()
+        .read_line(&mut input)
+        .expect("Could not read input from stdin!");
+    input.trim().to_string()
+}
+
 pub fn read_file<P: AsRef<Path>>(name: P) -> String {
     let mut input = String::new();
 

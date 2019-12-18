@@ -2,8 +2,7 @@ use intcode::{
     debug::{commands::handle, debugger::*},
     IntcodeComputer,
 };
-use std::sync::mpsc::channel;
-use std::thread::spawn;
+use std::{sync::mpsc::channel, thread::spawn, time::Duration};
 
 pub fn main() {
     let mut rl = editor::create_editor();
@@ -15,7 +14,15 @@ pub fn main() {
     }
 
     let mut debugger = Debugger::new(
-        IntcodeComputer::new(&Vec::new(), None, None, None, in_rx, out_tx),
+        IntcodeComputer::new(
+            &Vec::new(),
+            None,
+            None,
+            None,
+            in_rx,
+            out_tx,
+            Some(Duration::from_secs(3)),
+        ),
         in_tx,
         rl,
     );

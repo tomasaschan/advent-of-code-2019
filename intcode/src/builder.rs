@@ -1,7 +1,10 @@
 use super::parser::parse;
 use super::{Builder, IntcodeComputer};
-use std::sync::mpsc::{channel, Receiver, Sender};
-use std::thread;
+use std::{
+    sync::mpsc::{channel, Receiver, Sender},
+    thread,
+    time::Duration,
+};
 
 impl Builder {
     pub fn new() -> Builder {
@@ -10,6 +13,7 @@ impl Builder {
             _init_hook: None,
             _exit_hook: None,
             _input_hook: None,
+            _input_timeout: Some(Duration::from_secs(3)),
         }
     }
 
@@ -58,6 +62,11 @@ impl Builder {
         self
     }
 
+    pub fn input_timeout(&mut self, timeout: Option<Duration>) -> &mut Self {
+        self._input_timeout = timeout;
+        self
+    }
+
     /// Create the IntcodeComputer with the specified parameters, and run
     /// the program in a separate thread.
     ///
@@ -74,6 +83,7 @@ impl Builder {
             self._input_hook.clone(),
             in_rx,
             out_tx,
+            self._input_timeout,
         );
 
         thread::spawn(move || {
