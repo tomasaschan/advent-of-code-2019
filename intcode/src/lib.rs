@@ -12,6 +12,7 @@ pub struct IntcodeComputer {
     output: Sender<i128>,
     instruction_pointer: i128,
     empty_input_behavior: EmptyInputBehavior,
+    silent: bool,
 }
 
 pub struct Builder {
@@ -19,6 +20,7 @@ pub struct Builder {
     _init_hook: Option<Vec<i128>>,
     _exit_hook: Option<Vec<i128>>,
     _input_hook: Option<Vec<i128>>,
+    _silent: bool,
     _empty_input_behavior: EmptyInputBehavior,
 }
 

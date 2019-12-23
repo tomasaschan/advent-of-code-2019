@@ -9,6 +9,7 @@ impl IntcodeComputer {
         input_hook: Option<Vec<i128>>,
         input: Receiver<i128>,
         output: Sender<i128>,
+        silent: bool,
         empty_input_behavior: EmptyInputBehavior,
     ) -> IntcodeComputer {
         let mut computer = IntcodeComputer {
@@ -20,6 +21,7 @@ impl IntcodeComputer {
             instruction_pointer: 0,
             input,
             output,
+            silent,
             empty_input_behavior,
         };
         computer.reset();

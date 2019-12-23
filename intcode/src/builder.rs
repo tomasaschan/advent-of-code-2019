@@ -12,6 +12,7 @@ impl Builder {
             _init_hook: None,
             _exit_hook: None,
             _input_hook: None,
+            _silent: false,
             _empty_input_behavior: Wait(Duration::from_secs(3)),
         }
     }
@@ -76,6 +77,11 @@ impl Builder {
         self
     }
 
+    pub fn silent(&mut self) -> &mut Self {
+        self._silent = true;
+        self
+    }
+
     /// Create the IntcodeComputer with the specified parameters, and run
     /// the program in a separate thread.
     ///
@@ -92,6 +98,7 @@ impl Builder {
             self._input_hook.clone(),
             in_rx,
             out_tx,
+            self._silent,
             self._empty_input_behavior,
         );
 
@@ -136,6 +143,7 @@ impl Builder {
             self._input_hook.clone(),
             in_rx,
             out_tx,
+            self._silent,
             self._empty_input_behavior,
         )
         .run();
