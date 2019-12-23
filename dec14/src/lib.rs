@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-type Recipie<'a> = ((&'a str, usize), Vec<(&'a str, usize)>);
+type Recipie<'a> = (usize, Vec<(&'a str, usize)>);
 type Cookbook<'a> = HashMap<&'a str, Recipie<'a>>;
 
 pub fn solve_a(input: &String) -> usize {
@@ -32,14 +32,16 @@ pub fn solve_b(input: &String) -> usize {
     *extras.entry("ORE").or_default() += one_trillion - fuel * ore;
 
     // Produce more fule using the extra resources, until we need more ORE
-    loop {
+    let answer = loop {
         produce_1_fuel(&mut needs, &mut extras, &cookbook);
-        if needs.is_empty() {
-            fuel += 1;
-        } else {
+        if needs.contains_key("ORE") {
             break fuel;
+        } else {
+            assert!(needs.is_empty());
+            fuel += 1;
         }
-    }
+    };
+    answer
 }
 
 fn produce_1_fuel<'a>(
@@ -49,50 +51,42 @@ fn produce_1_fuel<'a>(
 ) {
     needs.insert("FUEL", 1);
 
-    while let Some((next, q)) = match needs.iter_mut().filter(|(k, _)| *k != &"ORE").next() {
+    while let Some((next, needed)) = match needs.iter_mut().filter(|(k, _)| *k != &"ORE").next() {
         Some((next, q)) => Some((*next, *q)),
         None => None,
     } {
         needs.remove(next);
-        let ((_, yld), recipie) = cookbook.get(next).unwrap();
-        let have = extras.get(next).unwrap_or(&0);
+        let (yld, recipie) = cookbook.get(next).unwrap();
+        let have = extras.remove(next).unwrap_or(0);
 
         let mut multiplier = 0;
-        while multiplier * yld + have < q {
+        while multiplier * yld + have < needed {
             multiplier += 1;
-            if multiplier > 1000000 {
+            if multiplier > 10000 {
                 panic!(
                     "need {} {}, have {}, recipie is {:?}. Multiplier too large!",
-                    q, next, have, recipie
+                    needed, next, have, recipie
                 );
             }
         }
-
-        for (ingredient, qqq) in recipie {
-            if qqq * multiplier > 0 {
+        if multiplier > 0 {
+            for (ingredient, qqq) in recipie {
                 *needs.entry(ingredient).or_default() += multiplier * *qqq;
             }
         }
-        *extras.entry(next).or_default() = multiplier * yld + have - q;
+        *extras.entry(next).or_default() = multiplier * yld + have - needed;
     }
 }
 
 fn parse(input: &String) -> Cookbook {
-    input
-        .split("\n")
-        .map(|line| {
-            let recipie = parse_recipie(line);
-            let ((product, _), _) = recipie.clone();
-            (product, recipie)
-        })
-        .collect()
+    input.split("\n").map(parse_recipie).collect()
 }
 
-fn parse_recipie(line: &str) -> Recipie {
+fn parse_recipie(line: &str) -> (&str, Recipie) {
     let recipie = line.split(" => ").collect::<Vec<&str>>();
     let ingredients = recipie[0].split(", ").map(parse_part).collect();
-    let result = parse_part(recipie[1]);
-    (result, ingredients)
+    let (product, yld) = parse_part(recipie[1]);
+    (product, (yld, ingredients))
 }
 
 fn parse_part(part: &str) -> (&str, usize) {
