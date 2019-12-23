@@ -22,6 +22,7 @@ pub fn main() {
             None,
             in_rx,
             out_tx,
+            false,
             Wait(Duration::from_secs(3)),
         ),
         in_tx,

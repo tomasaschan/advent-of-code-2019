@@ -50,7 +50,7 @@ fn explore(world: &mut WorldMap<i128>, input: &String) {
     let mut bot = (0, 0);
     let mut exploration_stack = Vec::new();
 
-    let (i, o) = Builder::new().parse(input).input_timeout(None).run();
+    let (i, o) = Builder::new().parse(input).block_on_input().run();
 
     loop {
         for mv in Direction::all()
