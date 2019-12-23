@@ -37,7 +37,7 @@ pub fn solve_b(input: &String) -> usize {
         if needs.is_empty() {
             fuel += 1;
         } else {
-            break fuel - 1;
+            break fuel;
         }
     }
 }
