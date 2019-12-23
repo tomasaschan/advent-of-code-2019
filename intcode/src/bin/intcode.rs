@@ -1,5 +1,6 @@
 use intcode::{
     debug::{commands::handle, debugger::*},
+    ops::read::EmptyInputBehavior::Wait,
     IntcodeComputer,
 };
 use std::{sync::mpsc::channel, thread::spawn, time::Duration};
@@ -21,7 +22,7 @@ pub fn main() {
             None,
             in_rx,
             out_tx,
-            Some(Duration::from_secs(3)),
+            Wait(Duration::from_secs(3)),
         ),
         in_tx,
         rl,

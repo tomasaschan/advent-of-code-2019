@@ -1,8 +1,6 @@
 use memory::Memory;
-use std::{
-    sync::mpsc::{Receiver, Sender},
-    time::Duration,
-};
+use ops::read::EmptyInputBehavior;
+use std::sync::mpsc::{Receiver, Sender};
 
 pub struct IntcodeComputer {
     program: Vec<i128>,
@@ -13,7 +11,7 @@ pub struct IntcodeComputer {
     input: Receiver<i128>,
     output: Sender<i128>,
     instruction_pointer: i128,
-    input_timeout: Option<Duration>,
+    empty_input_behavior: EmptyInputBehavior,
 }
 
 pub struct Builder {
@@ -21,7 +19,7 @@ pub struct Builder {
     _init_hook: Option<Vec<i128>>,
     _exit_hook: Option<Vec<i128>>,
     _input_hook: Option<Vec<i128>>,
-    _input_timeout: Option<Duration>,
+    _empty_input_behavior: EmptyInputBehavior,
 }
 
 pub mod builder;

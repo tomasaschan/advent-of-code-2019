@@ -1,5 +1,4 @@
-use super::parser::parse;
-use super::{Builder, IntcodeComputer};
+use super::{ops::read::EmptyInputBehavior::*, parser::parse, Builder, IntcodeComputer};
 use std::{
     sync::mpsc::{channel, Receiver, Sender},
     thread,
@@ -13,7 +12,7 @@ impl Builder {
             _init_hook: None,
             _exit_hook: None,
             _input_hook: None,
-            _input_timeout: Some(Duration::from_secs(3)),
+            _empty_input_behavior: Wait(Duration::from_secs(3)),
         }
     }
 
@@ -62,8 +61,18 @@ impl Builder {
         self
     }
 
-    pub fn input_timeout(&mut self, timeout: Option<Duration>) -> &mut Self {
-        self._input_timeout = timeout;
+    pub fn input_timeout(&mut self, timeout: Duration) -> &mut Self {
+        self._empty_input_behavior = Wait(timeout);
+        self
+    }
+
+    pub fn block_on_input(&mut self) -> &mut Self {
+        self._empty_input_behavior = Block;
+        self
+    }
+
+    pub fn input_default(&mut self, default: i128) -> &mut Self {
+        self._empty_input_behavior = Default(default);
         self
     }
 
@@ -83,7 +92,7 @@ impl Builder {
             self._input_hook.clone(),
             in_rx,
             out_tx,
-            self._input_timeout,
+            self._empty_input_behavior,
         );
 
         thread::spawn(move || {
@@ -127,7 +136,7 @@ impl Builder {
             self._input_hook.clone(),
             in_rx,
             out_tx,
-            self._input_timeout,
+            self._empty_input_behavior,
         )
         .run();
 
