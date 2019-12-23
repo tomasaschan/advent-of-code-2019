@@ -12,6 +12,7 @@ impl Builder {
             _init_hook: None,
             _exit_hook: None,
             _input_hook: None,
+            _initial_input: Vec::new(),
             _silent: false,
             _empty_input_behavior: Wait(Duration::from_secs(3)),
         }
@@ -77,6 +78,11 @@ impl Builder {
         self
     }
 
+    pub fn initial_input(&mut self, input: Vec<i128>) -> &mut Self {
+        self._initial_input = input;
+        self
+    }
+
     pub fn silent(&mut self) -> &mut Self {
         self._silent = true;
         self
@@ -90,6 +96,10 @@ impl Builder {
     pub fn run(&self) -> (Sender<i128>, Receiver<i128>) {
         let (in_tx, in_rx) = channel();
         let (out_tx, out_rx) = channel();
+
+        for i in self._initial_input.iter() {
+            in_tx.send(*i).unwrap();
+        }
 
         let mut computer = IntcodeComputer::new(
             self._program.as_ref().expect("No program set!"),
@@ -112,7 +122,7 @@ impl Builder {
     pub fn run_noninteractive(&self, input: &mut dyn Iterator<Item = i128>) -> Vec<i128> {
         let (in_tx, out_rx) = self.run();
 
-        for i in input {
+        for i in self._initial_input.clone().into_iter().chain(input) {
             match in_tx.send(i) {
                 Ok(_) => continue,
                 Err(_) => break,

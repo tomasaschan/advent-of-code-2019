@@ -20,6 +20,7 @@ pub struct Builder {
     _init_hook: Option<Vec<i128>>,
     _exit_hook: Option<Vec<i128>>,
     _input_hook: Option<Vec<i128>>,
+    _initial_input: Vec<i128>,
     _silent: bool,
     _empty_input_behavior: EmptyInputBehavior,
 }
