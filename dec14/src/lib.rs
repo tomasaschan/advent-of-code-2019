@@ -1,56 +1,61 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, iter::FromIterator};
 
 type Recipie<'a> = (usize, Vec<(&'a str, usize)>);
 type Cookbook<'a> = HashMap<&'a str, Recipie<'a>>;
 
 pub fn solve_a(input: &String) -> usize {
     let cookbook = parse(&input);
-    let mut needs = HashMap::<&str, usize>::new();
-    let mut extras = HashMap::<&str, usize>::new();
-    produce_1_fuel(&mut needs, &mut extras, &cookbook);
-    *needs.get("ORE").unwrap()
+    let mut extras = HashMap::new();
+    produce(
+        &mut HashMap::<&str, usize>::from_iter(vec![("FUEL", 1)]),
+        &mut extras,
+        &cookbook,
+    )
 }
 
 pub fn solve_b(input: &String) -> usize {
-    let one_trillion = 1000000000000;
+    let one_trillion: usize = 1_000_000_000_000;
     let cookbook = parse(&input);
-    let mut needs = HashMap::<&str, usize>::new();
     let mut extras = HashMap::<&str, usize>::new();
 
-    // Produce 1 FUEL to see how much ORE we need for that
-    produce_1_fuel(&mut needs, &mut extras, &cookbook);
-    let ore = needs.remove("ORE").unwrap();
+    let ore_for_one = produce(
+        &mut HashMap::<&str, usize>::from_iter(vec![("FUEL", 1)]),
+        &mut extras,
+        &cookbook,
+    );
 
-    assert!(needs.is_empty());
-
-    // Do that for as many times as we can, until we don't have enough ORE to produce one more
-    let mut fuel = one_trillion / ore;
-    for (_, c) in extras.iter_mut() {
-        *c *= fuel;
-    }
-    // We'll have some ORE left over within the 1 trillion allowed
-    *extras.entry("ORE").or_default() += one_trillion - fuel * ore;
-
-    // Produce more fule using the extra resources, until we need more ORE
-    let answer = loop {
-        produce_1_fuel(&mut needs, &mut extras, &cookbook);
-        if needs.contains_key("ORE") {
-            break fuel;
-        } else {
-            assert!(needs.is_empty());
-            fuel += 1;
+    let ore_for_extas = {
+        let mut ore = 0;
+        loop {
+            let mut extra_extras = HashMap::new();
+            println!(
+                "checking cost for producing {} more things...",
+                extras.len()
+            );
+            ore += produce(&mut extras, &mut extra_extras, &cookbook);
+            break ore;
+            println!(
+                "cost was {}, produced {} extra things",
+                ore,
+                extra_extras.len()
+            );
+            break 0;
+            if extra_extras.is_empty() {
+                break 0;
+            } else {
+                extras = extra_extras.clone();
+            }
         }
     };
-    answer
+
+    one_trillion / (ore_for_one - ore_for_extas)
 }
 
-fn produce_1_fuel<'a>(
+fn produce<'a>(
     needs: &mut HashMap<&'a str, usize>,
     extras: &mut HashMap<&'a str, usize>,
     cookbook: &'a Cookbook,
-) {
-    needs.insert("FUEL", 1);
-
+) -> usize {
     while let Some((next, needed)) = match needs.iter_mut().filter(|(k, _)| *k != &"ORE").next() {
         Some((next, q)) => Some((*next, *q)),
         None => None,
@@ -76,6 +81,9 @@ fn produce_1_fuel<'a>(
         }
         *extras.entry(next).or_default() = multiplier * yld + have - needed;
     }
+    let ore = needs.remove("ORE").unwrap_or_default();
+    assert!(needs.is_empty());
+    ore
 }
 
 fn parse(input: &String) -> Cookbook {
