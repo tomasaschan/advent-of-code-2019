@@ -1,103 +1,102 @@
-use std::{collections::HashMap, iter::FromIterator};
+use queues::{IsQueue, Queue};
+use std::cmp::max;
+use std::collections::HashMap;
 
-type Recipie<'a> = (usize, Vec<(&'a str, usize)>);
-type Cookbook<'a> = HashMap<&'a str, Recipie<'a>>;
+type Substance = String;
+type Quantity = i128;
+type Recipie = (Quantity, Vec<(Substance, Quantity)>);
+type Cookbook = HashMap<Substance, Recipie>;
+type Inventory = HashMap<Substance, Quantity>;
+const ONE_TRILLION: Quantity = 1_000_000_000_000;
 
-pub fn solve_a(input: &String) -> usize {
+pub fn solve_a(input: &String) -> Quantity {
     let cookbook = parse(&input);
-    let mut extras = HashMap::new();
-    produce(
-        &mut HashMap::<&str, usize>::from_iter(vec![("FUEL", 1)]),
-        &mut extras,
-        &cookbook,
-    )
+    ore_for_fuel(1, &cookbook)
 }
 
-pub fn solve_b(input: &String) -> usize {
-    let one_trillion: usize = 1_000_000_000_000;
+pub fn solve_b(input: &String) -> Quantity {
     let cookbook = parse(&input);
-    let mut extras = HashMap::<&str, usize>::new();
-
-    let ore_for_one = produce(
-        &mut HashMap::<&str, usize>::from_iter(vec![("FUEL", 1)]),
-        &mut extras,
-        &cookbook,
-    );
-
-    let ore_for_extas = {
-        let mut ore = 0;
-        loop {
-            let mut extra_extras = HashMap::new();
-            println!(
-                "checking cost for producing {} more things...",
-                extras.len()
-            );
-            ore += produce(&mut extras, &mut extra_extras, &cookbook);
-            break ore;
-            println!(
-                "cost was {}, produced {} extra things",
-                ore,
-                extra_extras.len()
-            );
-            break 0;
-            if extra_extras.is_empty() {
-                break 0;
-            } else {
-                extras = extra_extras.clone();
-            }
-        }
-    };
-
-    one_trillion / (ore_for_one - ore_for_extas)
+    maximize_fuel(&cookbook)
 }
 
-fn produce<'a>(
-    needs: &mut HashMap<&'a str, usize>,
-    extras: &mut HashMap<&'a str, usize>,
-    cookbook: &'a Cookbook,
-) -> usize {
-    while let Some((next, needed)) = match needs.iter_mut().filter(|(k, _)| *k != &"ORE").next() {
-        Some((next, q)) => Some((*next, *q)),
-        None => None,
-    } {
-        needs.remove(next);
-        let (yld, recipie) = cookbook.get(next).unwrap();
-        let have = extras.remove(next).unwrap_or(0);
+fn fuel() -> Substance {
+    Substance::from("FUEL")
+}
+fn ore() -> Substance {
+    Substance::from("ORE")
+}
 
-        let mut multiplier = 0;
-        while multiplier * yld + have < needed {
-            multiplier += 1;
-            if multiplier > 10000 {
-                panic!(
-                    "need {} {}, have {}, recipie is {:?}. Multiplier too large!",
-                    needed, next, have, recipie
-                );
-            }
+fn ore_for_fuel(amount: Quantity, cookbook: &Cookbook) -> Quantity {
+    let mut inventory = Inventory::new();
+    let mut queue = Queue::<Substance>::new();
+
+    queue.add(fuel()).unwrap();
+    *inventory.entry(fuel()).or_default() -= amount;
+
+    while let Ok(next) = queue.remove() {
+        if next == ore() {
+            continue;
         }
-        if multiplier > 0 {
-            for (ingredient, qqq) in recipie {
-                *needs.entry(ingredient).or_default() += multiplier * *qqq;
-            }
+        let stock = inventory.remove(&next).unwrap_or_default();
+        let (yld, recipie) = cookbook.get(&next).unwrap();
+
+        let multiplier = max(0, ((-stock as f64) / (*yld as f64)).ceil() as i128);
+        for (ingredient, quantity) in recipie {
+            queue.add(ingredient.clone()).unwrap();
+            *inventory.entry(ingredient.clone()).or_default() -= multiplier * quantity;
         }
-        *extras.entry(next).or_default() = multiplier * yld + have - needed;
+        inventory.insert(next, stock + yld * multiplier);
     }
-    let ore = needs.remove("ORE").unwrap_or_default();
-    assert!(needs.is_empty());
-    ore
+
+    let ore_needed = -inventory.remove(&ore()).unwrap_or_default();
+    assert!(inventory
+        .iter()
+        .all(|(ingredient, stock)| stock >= &0 || *ingredient == ore()));
+    ore_needed
 }
 
-fn parse(input: &String) -> Cookbook {
+fn maximize_fuel<'a>(cookbook: &Cookbook) -> Quantity {
+    // 1. Find bounds
+    let mut upper = 1_000;
+    while ore_for_fuel(upper, cookbook) < ONE_TRILLION {
+        upper *= 2;
+    }
+    let mut lower = upper / 2;
+    let mut mid = (upper + lower + 1) / 2;
+
+    // 2. Binary search
+    while upper > lower {
+        if ore_for_fuel(mid, cookbook) > ONE_TRILLION {
+            upper = mid - 1;
+            mid = (upper + lower + 1) / 2;
+        } else {
+            lower = mid;
+            mid = (upper + lower + 1) / 2;
+        }
+    }
+
+    upper
+}
+
+fn parse(input: &Substance) -> Cookbook {
     input.split("\n").map(parse_recipie).collect()
 }
 
-fn parse_recipie(line: &str) -> (&str, Recipie) {
-    let recipie = line.split(" => ").collect::<Vec<&str>>();
-    let ingredients = recipie[0].split(", ").map(parse_part).collect();
-    let (product, yld) = parse_part(recipie[1]);
+fn parse_recipie(line: &str) -> (Substance, Recipie) {
+    let recipie = line
+        .split(" => ")
+        .map(Substance::from)
+        .collect::<Vec<Substance>>();
+    let ingredients = recipie[0]
+        .split(", ")
+        .map(Substance::from)
+        .map(parse_part)
+        .collect();
+    let (product, yld) = parse_part(recipie[1].clone());
     (product, (yld, ingredients))
 }
 
-fn parse_part(part: &str) -> (&str, usize) {
-    let parts: Vec<&str> = part.split(" ").collect();
-    (parts[1], parts[0].parse().unwrap())
+fn parse_part(part: Substance) -> (Substance, Quantity) {
+    let parts: Vec<Substance> = part.split(" ").map(Substance::from).collect();
+    (parts[1].clone(), parts[0].parse().unwrap())
 }
