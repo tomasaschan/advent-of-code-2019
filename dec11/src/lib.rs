@@ -7,7 +7,7 @@ pub fn solve_a(input: &String) -> i128 {
     map.get_terrain().keys().count() as i128
 }
 
-pub fn solve_b(input: &String) -> (i128) {
+pub fn solve_b(input: &String) -> i128 {
     let mut map: WorldMap<i128> = WorldMap::new();
     map.update((0, 0), |_| 1);
     paint_hull(&mut map, 1, input);
