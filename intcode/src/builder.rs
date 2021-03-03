@@ -119,7 +119,10 @@ impl Builder {
         (in_tx, out_rx)
     }
 
-    pub fn run_noninteractive(&self, input: &mut dyn Iterator<Item = i128>) -> Vec<i128> {
+    pub fn run_noninteractive<I>(&self, input: &mut I) -> Vec<i128>
+    where
+        I: Iterator<Item = i128>,
+    {
         let (in_tx, out_rx) = self.run();
 
         for i in self._initial_input.clone().into_iter().chain(input) {
@@ -136,7 +139,10 @@ impl Builder {
         output
     }
 
-    pub fn run_sync(&self, input: &mut dyn Iterator<Item = i128>) -> Vec<i128> {
+    pub fn run_sync<I>(&self, input: &mut I) -> Vec<i128>
+    where
+        I: Iterator<Item = i128>,
+    {
         let (in_tx, in_rx) = channel();
         let (out_tx, out_rx) = channel();
 
