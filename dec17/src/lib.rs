@@ -33,7 +33,7 @@ pub fn solve_a(input: &String) -> i32 {
 fn map_from_input(input: &String) -> WorldMap<char> {
     let output = Builder::new()
         .parse(input)
-        .run_sync(&mut vec![].into_iter());
+        .run_noninteractive(&mut vec![].into_iter());
     let ascii_output = parse_ascii(output);
     scaffold::get_map(&ascii_output)
 }

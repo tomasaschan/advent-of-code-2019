@@ -139,34 +139,6 @@ impl Builder {
         output
     }
 
-    pub fn run_sync<I>(&self, input: &mut I) -> Vec<i128>
-    where
-        I: Iterator<Item = i128>,
-    {
-        let (in_tx, in_rx) = channel();
-        let (out_tx, out_rx) = channel();
-
-        for i in input {
-            match in_tx.send(i) {
-                Ok(_) => continue,
-                Err(_) => panic!("Failed to send {} to computer", i),
-            }
-        }
-        IntcodeComputer::new(
-            self._program.as_ref().expect("No program set!"),
-            self._init_hook.clone(),
-            self._exit_hook.clone(),
-            self._input_hook.clone(),
-            in_rx,
-            out_tx,
-            self._silent,
-            self._empty_input_behavior,
-        )
-        .run();
-
-        out_rx.iter().collect()
-    }
-
     fn end_in_99(hook: Vec<i128>) -> Vec<i128> {
         let mut hook = hook.clone();
         if !hook.ends_with(&[99]) {

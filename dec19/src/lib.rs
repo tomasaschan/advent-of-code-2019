@@ -47,6 +47,6 @@ pub fn solve_b(input: &String) -> i128 {
 fn is_inside(x: i128, y: i128, input: &String) -> bool {
     let o = Builder::new()
         .parse(input)
-        .run_sync(&mut vec![x, y].into_iter());
+        .run_noninteractive(&mut vec![x, y].into_iter());
     o.get(0).unwrap() == &1
 }
