@@ -31,17 +31,12 @@ pub fn solve_a(input: &String) -> i32 {
 }
 
 fn map_from_input(input: &String) -> WorldMap<char> {
-    let output = Builder::new()
+    let output = AsciiBuilder::new()
         .parse(input)
-        .run_noninteractive(&mut vec![].into_iter());
-    let ascii_output = parse_ascii(output);
-    scaffold::get_map(&ascii_output)
-}
-
-fn parse_ascii(data: Vec<i128>) -> String {
-    data.into_iter()
-        .map(|i| std::char::from_u32(i as u32).unwrap())
-        .collect::<String>()
+        .run_noninteractive(&mut vec![].into_iter())
+        .into_iter()
+        .collect();
+    scaffold::get_map(&output)
 }
 
 pub fn solve_b(input: &String) -> i128 {

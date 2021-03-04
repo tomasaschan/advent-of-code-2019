@@ -25,6 +25,11 @@ pub struct Builder {
     _empty_input_behavior: EmptyInputBehavior,
 }
 
+pub struct AsciiBuilder {
+    _builder: Builder,
+}
+
+pub mod ascii;
 pub mod builder;
 pub mod debug;
 pub mod hooks;
