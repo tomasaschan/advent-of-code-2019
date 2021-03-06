@@ -59,18 +59,20 @@ impl AsciiBuilder {
         self
     }
 
-    pub fn run(&self) -> (Sender<char>, Receiver<char>) {
-        let (in_tx, in_rx) = channel();
+    pub fn run(&self) -> (Sender<String>, Receiver<char>) {
+        let (in_tx, in_rx) = channel::<String>();
         let (out_tx, out_rx) = channel();
 
         let (input, output) = self._builder.run();
 
         thread::spawn(move || {
-            for c in in_rx.iter() {
-                let i = atoi(c);
-                input
-                    .send(i)
-                    .expect(&format!("Failed to forward input {} ({})", c, i));
+            for s in in_rx.iter() {
+                for c in s.chars() {
+                    let i = atoi(c);
+                    input
+                        .send(i)
+                        .expect(&format!("Failed to forward input {} ({})", c, i));
+                }
             }
         });
 

@@ -1,4 +1,5 @@
 use intcode::*;
+// use std::iter::FromIterator;
 use util::map_2d::*;
 
 pub mod interactive;
@@ -40,8 +41,36 @@ fn map_from_input(input: &String) -> WorldMap<char> {
 }
 
 pub fn solve_b(input: &String) -> i128 {
-    let (i, o) = Builder::new().init_hook(vec![]).parse(input).run();
-    let map = map_from_input(&input);
-    scaffold::display_map(&map);
-    0
+    let (i, o) = Builder::new()
+        .init_hook(vec![3, 0])
+        .initial_input(vec![2])
+        .parse(input)
+        .run();
+
+    let main_routine = "A,B,A,C,B,A,C,B,A,C";
+    let a = "L,6,L,4,R,12";
+    let b = "L,6,R,12,R,12,L,8";
+    let c = "L,6,L,10,L,10,L,6";
+
+    let continuous_feed = "n";
+    for input_digit in (vec![main_routine, a, b, c, continuous_feed].join("\n") + "\n")
+        .chars()
+        .map(|c| c as u32 as i128)
+    {
+        i.send(input_digit).unwrap();
+    }
+
+    let output: Vec<i128> = o.iter().collect();
+    // print!(
+    //     "{}",
+    //     String::from_iter(output.iter().map(|i| match std::char::from_u32(*i as u32) {
+    //         Some(c) => c,
+    //         None => ' ',
+    //     }))
+    // );
+
+    match output.into_iter().last() {
+        Some(i) => i,
+        None => -1,
+    }
 }
