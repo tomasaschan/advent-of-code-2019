@@ -2,9 +2,11 @@ use std::clone::Clone;
 use std::collections::HashMap;
 use std::iter::FromIterator;
 
+pub type Coord = (i32, i32);
+
 #[derive(Debug, Clone)]
 pub struct WorldMap<T> {
-    terrain: HashMap<(i32, i32), T>,
+    terrain: HashMap<Coord, T>,
 }
 
 impl<T> WorldMap<T> {
@@ -14,25 +16,29 @@ impl<T> WorldMap<T> {
         }
     }
 
-    pub fn update<F: Fn(Option<&T>) -> T>(&mut self, coord: (i32, i32), f: F) {
+    pub fn update<F: Fn(Option<&T>) -> T>(&mut self, coord: Coord, f: F) {
         let v = self.terrain.get(&coord);
         let new_v = f(v);
         self.terrain.insert(coord, new_v);
     }
 
-    pub fn insert(&mut self, coord: (i32, i32), value: T) {
+    pub fn insert(&mut self, coord: Coord, value: T) {
         self.terrain.insert(coord, value);
     }
 
-    pub fn get(&self, coord: &(i32, i32)) -> Option<&T> {
+    pub fn get(&self, coord: &Coord) -> Option<&T> {
         self.terrain.get(coord)
     }
 
-    pub fn get_terrain(&self) -> HashMap<&(i32, i32), &T> {
+    pub fn get_terrain(&self) -> HashMap<&Coord, &T> {
         HashMap::from_iter((&self.terrain).into_iter())
     }
 
-    pub fn corners(&self) -> ((i32, i32), (i32, i32)) {
+    /**
+     * returns the upper-left and lower-right corners of the map,
+     * (xmin,ymin), (xmax,ymax)
+     */
+    pub fn corners(&self) -> (Coord, Coord) {
         let (mut xmin, mut xmax, mut ymin, mut ymax) = (0, 0, 0, 0);
 
         for ((x, y), _) in self.terrain.iter() {
@@ -55,7 +61,7 @@ impl<T> WorldMap<T> {
 }
 
 impl<T: PartialEq> WorldMap<T> {
-    pub fn find(&self, needle: T) -> Vec<(i32, i32)> {
+    pub fn find(&self, needle: T) -> Vec<Coord> {
         self.terrain
             .iter()
             .filter(|(_, v)| *v == &needle)
@@ -64,19 +70,19 @@ impl<T: PartialEq> WorldMap<T> {
     }
 }
 
-pub fn above(pos: (i32, i32)) -> (i32, i32) {
+pub fn above(pos: Coord) -> Coord {
     let (x, y) = pos;
     (x, y + 1)
 }
-pub fn below(pos: (i32, i32)) -> (i32, i32) {
+pub fn below(pos: Coord) -> Coord {
     let (x, y) = pos;
     (x, y - 1)
 }
-pub fn left_of(pos: (i32, i32)) -> (i32, i32) {
+pub fn left_of(pos: Coord) -> Coord {
     let (x, y) = pos;
     (x - 1, y)
 }
-pub fn right_of(pos: (i32, i32)) -> (i32, i32) {
+pub fn right_of(pos: Coord) -> Coord {
     let (x, y) = pos;
     (x + 1, y)
 }
@@ -101,7 +107,7 @@ pub fn turn_right(d: Direction) -> Direction {
         Direction::Left => Direction::Up,
     }
 }
-pub fn move_to(d: Direction, p: (i32, i32)) -> (i32, i32) {
+pub fn move_to(d: Direction, p: Coord) -> Coord {
     match d {
         Direction::Up => above(p),
         Direction::Left => left_of(p),
