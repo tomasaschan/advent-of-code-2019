@@ -73,7 +73,7 @@ impl<T: PartialEq + Display> Display for WorldMap<T> {
 
         let mut x_places = (max(-xlo, xhi) as f64).log10() as i32 + 1;
         let y_places = (max(-ylo, yhi) as f64).log10() as i32 + 1;
-        let y_width = y_places + if ylo < 0 { 1 } else { 0 };
+        let y_width = y_places + if ylo < 0 { 2 } else { 1 };
 
         while x_places > 0 {
             f.write_str(&" ".repeat(y_width as usize))?;
@@ -86,12 +86,13 @@ impl<T: PartialEq + Display> Display for WorldMap<T> {
             f.write_str("\n")?;
             x_places -= 1;
         }
+        f.write_str(&"\n")?;
 
         let max_yw = max(format!("{}", ylo).len(), format!("{}", yhi).len());
         for y in ylo..=yhi {
             let yw = format!("{}", y).len();
             f.write_str(&" ".repeat(max_yw - yw))?;
-            f.write_str(&format!("{}", y))?;
+            f.write_str(&format!("{} ", y))?;
 
             for x in xlo..=xhi {
                 match self.get(&(x, y)) {
