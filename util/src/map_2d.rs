@@ -1,5 +1,7 @@
 use std::clone::Clone;
+use std::cmp::max;
 use std::collections::HashMap;
+use std::fmt::{Display, Formatter};
 use std::iter::FromIterator;
 
 pub type Coord = (i32, i32);
@@ -60,6 +62,51 @@ impl<T> WorldMap<T> {
     }
 }
 
+impl<T: PartialEq + Display> Display for WorldMap<T> {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
+        let ((xlo, ylo), (xhi, yhi)) = self.corners();
+
+        for _ in xlo..=-1 {
+            f.write_str("-")?;
+        }
+        f.write_str("\n")?;
+
+        let mut x_places = (max(-xlo, xhi) as f64).log10() as i32 + 1;
+        let y_places = (max(-ylo, yhi) as f64).log10() as i32 + 1;
+        let y_width = y_places + if ylo < 0 { 1 } else { 0 };
+
+        while x_places > 0 {
+            f.write_str(&" ".repeat(y_width as usize))?;
+            for x in xlo..=xhi {
+                f.write_str(&format!(
+                    "{}",
+                    x.abs() / 10_i32.pow(x_places as u32 - 1) % 10
+                ))?;
+            }
+            f.write_str("\n")?;
+            x_places -= 1;
+        }
+
+        let max_yw = max(format!("{}", ylo).len(), format!("{}", yhi).len());
+        for y in ylo..=yhi {
+            let yw = format!("{}", y).len();
+            f.write_str(&" ".repeat(max_yw - yw))?;
+            f.write_str(&format!("{}", y))?;
+
+            for x in xlo..=xhi {
+                match self.get(&(x, y)) {
+                    Some(t) => f.write_str(&format!("{}", t)),
+                    None => f.write_str(" "),
+                }?;
+            }
+
+            f.write_str(&"\n")?;
+        }
+
+        Ok(())
+    }
+}
+
 impl<T: PartialEq> WorldMap<T> {
     pub fn find(&self, needle: T) -> Vec<Coord> {
         self.terrain
@@ -67,6 +114,42 @@ impl<T: PartialEq> WorldMap<T> {
             .filter(|(_, v)| *v == &needle)
             .map(|(coord, _)| *coord)
             .collect()
+    }
+
+    pub fn find_single(&self, needle: T) -> Coord {
+        let all = self.find(needle);
+        let loc = all.first().unwrap();
+        loc.clone()
+    }
+}
+
+impl<T: PartialEq + Copy> WorldMap<T> {
+    pub fn parse<F: Copy + Fn(char) -> T>(input: &String, read: F) -> WorldMap<T> {
+        WorldMap::from_iter(
+            input
+                .split("\n")
+                .enumerate()
+                .map(|(y, line)| {
+                    line.chars().enumerate().map(move |(x, t)| {
+                        let coord = (x as i32, y as i32);
+                        (coord, read(t))
+                    })
+                })
+                .flatten(),
+        )
+    }
+}
+
+impl<T: PartialEq + Copy> FromIterator<(Coord, T)> for WorldMap<T> {
+    fn from_iter<I>(iter: I) -> WorldMap<T>
+    where
+        I: IntoIterator<Item = (Coord, T)>,
+    {
+        let mut map = WorldMap::<T>::new();
+        for ((x, y), t) in iter {
+            map.update((x, y), |_| t);
+        }
+        map
     }
 }
 
