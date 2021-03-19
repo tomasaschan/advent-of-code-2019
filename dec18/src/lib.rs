@@ -49,6 +49,75 @@ pub fn solve_a(input: &String) -> usize {
     panic!("Didn't find a way to pick up all keys!")
 }
 
+pub fn solve_b(input: &String) -> usize {
+    let mut map = WorldMap::parse(&input, Tile::from);
+
+    let entrance = map.find_single(Tile::Entrance);
+    for c in vec![
+        entrance,
+        above(entrance),
+        below(entrance),
+        right_of(entrance),
+        left_of(entrance),
+    ] {
+        map.insert(c, Tile::StoneWall);
+    }
+    let (a, b, c, d) = (
+        above(right_of(entrance)),
+        above(left_of(entrance)),
+        below(right_of(entrance)),
+        below(left_of(entrance)),
+    );
+
+    println!("{}", map);
+
+    let all_keys = KeyRing::from(input.chars().filter(|c| c.is_ascii_lowercase()));
+
+    let mut seen = HashSet::new();
+    let mut q = BinaryHeap::new();
+
+    q.push(Reverse((0, KeyRing::new(), a, b, c, d)));
+
+    while let Some(Reverse((steps, keyring, a, b, c, d))) = q.pop() {
+        if keyring == all_keys {
+            return steps;
+        }
+
+        if !seen.insert((keyring.clone(), a, b, c, d)) {
+            continue;
+        }
+
+        for (np, k, s) in keys_reachable(&map, a, &keyring) {
+            let nks = keyring.with(&k);
+            if !seen.contains(&(nks.clone(), np, b, c, d)) {
+                q.push(Reverse((steps + s, nks, np, b, c, d)));
+            }
+        }
+
+        for (np, k, s) in keys_reachable(&map, b, &keyring) {
+            let nks = keyring.with(&k);
+            if !seen.contains(&(nks.clone(), a, np, c, d)) {
+                q.push(Reverse((steps + s, nks, a, np, c, d)));
+            }
+        }
+
+        for (np, k, s) in keys_reachable(&map, c, &keyring) {
+            let nks = keyring.with(&k);
+            if !seen.contains(&(nks.clone(), a, b, np, d)) {
+                q.push(Reverse((steps + s, nks, a, b, np, d)));
+            }
+        }
+
+        for (np, k, s) in keys_reachable(&map, d, &keyring) {
+            let nks = keyring.with(&k);
+            if !seen.contains(&(nks.clone(), a, b, c, np)) {
+                q.push(Reverse((steps + s, nks, a, b, c, np)));
+            }
+        }
+    }
+    panic!("Didn't find a way to pick up all keys!");
+}
+
 fn keys_reachable(
     map: &WorldMap<Tile>,
     pos: Coord,
