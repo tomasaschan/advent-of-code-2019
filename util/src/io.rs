@@ -3,13 +3,17 @@ use std::io;
 use std::io::prelude::*;
 use std::path::Path;
 
-pub fn get_input() -> String {
+pub fn get_input_no_trim() -> String {
     let mut input = String::new();
 
     io::stdin()
         .read_to_string(&mut input)
         .expect("Could not read input from stdin!");
-    return input.trim().to_string();
+    input
+}
+
+pub fn get_input() -> String {
+    get_input_no_trim().trim().to_string()
 }
 
 pub fn get_first_line() -> String {
