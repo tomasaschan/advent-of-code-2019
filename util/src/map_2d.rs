@@ -154,21 +154,21 @@ impl<T: PartialEq + Copy> FromIterator<(Coord, T)> for WorldMap<T> {
     }
 }
 
-pub fn above(pos: Coord) -> Coord {
+pub fn above(pos: &Coord) -> Coord {
     let (x, y) = pos;
-    (x, y + 1)
+    (*x, y - 1)
 }
-pub fn below(pos: Coord) -> Coord {
+pub fn below(pos: &Coord) -> Coord {
     let (x, y) = pos;
-    (x, y - 1)
+    (*x, y + 1)
 }
-pub fn left_of(pos: Coord) -> Coord {
+pub fn left_of(pos: &Coord) -> Coord {
     let (x, y) = pos;
-    (x - 1, y)
+    (x - 1, *y)
 }
-pub fn right_of(pos: Coord) -> Coord {
+pub fn right_of(pos: &Coord) -> Coord {
     let (x, y) = pos;
-    (x + 1, y)
+    (x + 1, *y)
 }
 
 pub fn turn_around(d: Direction) -> Direction {
@@ -191,7 +191,7 @@ pub fn turn_right(d: Direction) -> Direction {
         Direction::Left => Direction::Up,
     }
 }
-pub fn move_to(d: Direction, p: Coord) -> Coord {
+pub fn move_to(d: Direction, p: &Coord) -> Coord {
     match d {
         Direction::Up => above(p),
         Direction::Left => left_of(p),
@@ -200,7 +200,7 @@ pub fn move_to(d: Direction, p: Coord) -> Coord {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Direction {
     Up,
     Down,
