@@ -13,6 +13,7 @@ pub fn handle(input: &String, debugger: &mut Debugger) {
         "s" | "show" => debugger.show(&cmd[1..]),
         "n" | "next" => debugger.next(&cmd[1..]),
         "in" | "input" => debugger.provide_input(&cmd[1..]),
+        "ascii" => debugger.toggle_ascii(&cmd[1..]),
         _ => println!("Unknown command {}", cmd[0]),
     }
 }

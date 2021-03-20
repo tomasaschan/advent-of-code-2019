@@ -10,6 +10,7 @@ pub struct Debugger {
     input_queue: Queue<i128>,
     input_sender: Sender<i128>,
     has_run_init_hook: bool,
+    ascii_mode: bool,
 }
 
 impl Debugger {
@@ -24,10 +25,12 @@ impl Debugger {
             input_sender,
             input_queue: Queue::new(),
             has_run_init_hook: false,
+            ascii_mode: false,
         }
     }
 }
 
+pub mod ascii;
 pub mod editor;
 pub mod help;
 pub mod hook;

@@ -11,6 +11,7 @@ impl Debugger {
                 "s  | show",
                 "n  | next",
                 "in | input\tinput <comma-separated ints>",
+                "     ascii\tascii <on|off>",
                 "     reset"
             ]
             .join("\n")
