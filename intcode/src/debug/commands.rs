@@ -6,6 +6,7 @@ pub fn handle(input: &String, debugger: &mut Debugger) {
     }
     let cmd: Vec<&str> = input.split_whitespace().collect();
     match cmd[0] {
+        "?" | "help" => debugger.print_help(),
         "l" | "load" => debugger.load(&cmd[1..]),
         "h" | "hook" => debugger.hook(&cmd[1..]),
         "reset" => debugger.reset(&cmd[1..]),

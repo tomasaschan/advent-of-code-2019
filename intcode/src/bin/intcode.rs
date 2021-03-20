@@ -35,7 +35,8 @@ pub fn main() {
         }
     });
 
-    println!("Welcome to Intcode Debugger!");
+    println!("Welcome to Intcode Debugger!\n");
+    debugger.print_help();
     loop {
         match debugger.readline("dbg> ", true) {
             Some(cmd) => {

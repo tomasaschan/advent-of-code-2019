@@ -29,6 +29,7 @@ impl Debugger {
 }
 
 pub mod editor;
+pub mod help;
 pub mod hook;
 pub mod load;
 pub mod next;
