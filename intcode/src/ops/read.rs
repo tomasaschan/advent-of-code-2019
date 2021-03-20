@@ -8,6 +8,7 @@ use std::time::Duration;
 #[derive(Debug, Clone, Copy)]
 pub enum EmptyInputBehavior {
     Block,
+    BlockWithPrompt,
     Wait(Duration),
     Default(i128),
 }
@@ -25,6 +26,7 @@ impl IntcodeComputer {
             Wait(timeout) => self.read_with_timeout(timeout),
             Default(default) => self.read_with_default(default),
             Block => self.read_and_block(),
+            BlockWithPrompt => self.read_and_block_with_prompt(),
         } {
             self.set_at_offset(1, value, param_mode(mode, 0));
             self.memory.set(
@@ -41,6 +43,20 @@ impl IntcodeComputer {
             Err(RecvError {}) => {
                 self.shut_down();
                 return None;
+            }
+        }
+    }
+
+    fn read_and_block_with_prompt(&mut self) -> Option<i128> {
+        match self.input.try_recv() {
+            Ok(value) => Some(value),
+            Err(TryRecvError::Empty) => {
+                print!("> ");
+                self.read_and_block()
+            }
+            Err(TryRecvError::Disconnected) => {
+                self.shut_down();
+                None
             }
         }
     }
