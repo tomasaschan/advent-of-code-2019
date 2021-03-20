@@ -34,10 +34,10 @@ fn find_shortest_path(mut world: WorldMap<i128>) -> usize {
                 world.insert(p, 3);
 
                 for mv in Direction::all().into_iter().filter(|d| {
-                    let x = world.get(&move_to(*d, p));
+                    let x = world.get(&move_to(*d, &p));
                     x == Some(&1) || x == Some(&2)
                 }) {
-                    let next = move_to(mv, p);
+                    let next = move_to(mv, &p);
                     exploration_queue.push((Reverse(s + 1), next));
                 }
             }
@@ -55,7 +55,7 @@ fn explore(world: &mut WorldMap<i128>, input: &String) {
     loop {
         for mv in Direction::all()
             .into_iter()
-            .filter(|d| world.get(&move_to(*d, bot)).is_none())
+            .filter(|d| world.get(&move_to(*d, &bot)).is_none())
         {
             exploration_stack.push(Move::Explore(mv));
         }
@@ -64,14 +64,14 @@ fn explore(world: &mut WorldMap<i128>, input: &String) {
             Some(Move::Explore(ed)) => {
                 i.send(command(ed)).unwrap();
                 match o.recv().unwrap() {
-                    0 => world.insert(move_to(ed, bot), 0),
+                    0 => world.insert(move_to(ed, &bot), 0),
                     1 => {
-                        bot = move_to(ed, bot);
+                        bot = move_to(ed, &bot);
                         world.insert(bot, 1);
                         exploration_stack.push(Move::Backtrack(turn_around(ed)))
                     }
                     2 => {
-                        bot = move_to(ed, bot);
+                        bot = move_to(ed, &bot);
                         world.insert(bot, 2);
                         exploration_stack.push(Move::Backtrack(turn_around(ed)))
                     }
@@ -81,7 +81,7 @@ fn explore(world: &mut WorldMap<i128>, input: &String) {
             Some(Move::Backtrack(bd)) => {
                 i.send(command(bd)).unwrap();
                 match o.recv().unwrap() {
-                    1 => bot = move_to(bd, bot),
+                    1 => bot = move_to(bd, &bot),
                     o => {
                         draw(&world);
                         panic!(format!("Tried to backtrack into a non-empty square! (from {:?} moving {:?} yielded output {})", bot, bd, o));
@@ -103,7 +103,7 @@ fn fill(world: WorldMap<i128>, start: (i32, i32)) -> usize {
     loop {
         match fill_queue.pop() {
             Some((Reverse(s), loc)) => {
-                for next in Direction::all().iter().map(|d| move_to(*d, loc)) {
+                for next in Direction::all().iter().map(|d| move_to(*d, &loc)) {
                     let terrain = world.get(&next);
                     if (terrain != Some(&1) && terrain != Some(&2)) || filled.contains_key(&next) {
                         continue;

@@ -50,7 +50,7 @@ pub fn paint_hull(map: &mut WorldMap<i128>, start: i128, program: &String) {
             1 => turn_right(dir),
             _ => panic!("Got instruction to turn an unknown direction: {}", trn),
         };
-        pos = move_to(dir, pos);
+        pos = move_to(dir, &pos);
 
         let new_clr = map.get(&pos).unwrap_or(&0);
         match input.send(*new_clr) {

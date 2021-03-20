@@ -7,7 +7,7 @@ use std::{
     collections::{binary_heap::BinaryHeap, HashSet, VecDeque},
     iter::FromIterator,
 };
-use util::map_2d::{above, below, left_of, right_of, Coord, WorldMap};
+use util::map_2d::{above, below, left_of, move_to, right_of, Coord, Direction, WorldMap};
 use world::*;
 
 pub fn solve_a(input: &String) -> usize {
@@ -55,18 +55,18 @@ pub fn solve_b(input: &String) -> usize {
     let entrance = map.find_single(Tile::Entrance);
     for c in vec![
         entrance,
-        above(entrance),
-        below(entrance),
-        right_of(entrance),
-        left_of(entrance),
+        above(&entrance),
+        below(&entrance),
+        right_of(&entrance),
+        left_of(&entrance),
     ] {
         map.insert(c, Tile::StoneWall);
     }
     let (a, b, c, d) = (
-        above(right_of(entrance)),
-        above(left_of(entrance)),
-        below(right_of(entrance)),
-        below(left_of(entrance)),
+        above(&right_of(&entrance)),
+        above(&left_of(&entrance)),
+        below(&right_of(&entrance)),
+        below(&left_of(&entrance)),
     );
 
     println!("{}", map);
@@ -132,7 +132,8 @@ fn keys_reachable(
     while let Some((p, s)) = q.pop_front() {
         seen.insert(p);
 
-        for np in vec![above(p), below(p), right_of(p), left_of(p)] {
+        for d in Direction::all() {
+            let np = move_to(d, &p);
             if seen.contains(&np) {
                 continue;
             }

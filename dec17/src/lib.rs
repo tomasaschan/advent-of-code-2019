@@ -14,10 +14,10 @@ pub fn solve_a(input: &String) -> i32 {
         for x in xlo..xhi + 1 {
             match (
                 scaffold_map.get(&(x, y)),
-                scaffold_map.get(&above((x, y))),
-                scaffold_map.get(&below((x, y))),
-                scaffold_map.get(&left_of((x, y))),
-                scaffold_map.get(&right_of((x, y))),
+                scaffold_map.get(&above(&(x, y))),
+                scaffold_map.get(&below(&(x, y))),
+                scaffold_map.get(&left_of(&(x, y))),
+                scaffold_map.get(&right_of(&(x, y))),
             ) {
                 (Some('#'), Some('#'), Some('#'), Some('#'), Some('#')) => {
                     sum += x * y;
