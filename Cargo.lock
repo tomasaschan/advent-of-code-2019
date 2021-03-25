@@ -93,7 +93,7 @@ name = "aoc-2019-10"
 version = "0.1.0"
 dependencies = [
  "intcode",
- "num",
+ "num 0.2.0",
  "util",
 ]
 
@@ -111,7 +111,7 @@ version = "0.1.0"
 dependencies = [
  "intcode",
  "lazy_static",
- "num",
+ "num 0.2.0",
  "regex",
  "util",
 ]
@@ -193,6 +193,15 @@ name = "aoc-2019-21"
 version = "0.1.0"
 dependencies = [
  "intcode",
+ "util",
+]
+
+[[package]]
+name = "aoc-2019-22"
+version = "0.1.0"
+dependencies = [
+ "intcode",
+ "num 0.3.1",
  "util",
 ]
 
@@ -497,11 +506,25 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf4825417e1e1406b3782a8ce92f4d53f26ec055e3622e1881ca8e9f5f9e08db"
 dependencies = [
- "num-bigint",
- "num-complex",
+ "num-bigint 0.2.3",
+ "num-complex 0.2.3",
  "num-integer",
  "num-iter",
- "num-rational",
+ "num-rational 0.2.2",
+ "num-traits",
+]
+
+[[package]]
+name = "num"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8b7a8e9be5e039e2ff869df49155f1c06bd01ade2117ec783e56ab0932b67a8f"
+dependencies = [
+ "num-bigint 0.3.2",
+ "num-complex 0.3.1",
+ "num-integer",
+ "num-iter",
+ "num-rational 0.3.2",
  "num-traits",
 ]
 
@@ -517,12 +540,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "num-bigint"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d0a3d5e207573f948a9e5376662aa743a2ea13f7c50a554d7af443a73fbfeba"
+dependencies = [
+ "autocfg 1.0.1",
+ "num-integer",
+ "num-traits",
+]
+
+[[package]]
 name = "num-complex"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fcb0cf31fb3ff77e6d2a6ebd6800df7fdcd106f2ad89113c9130bcd07f93dffc"
 dependencies = [
  "autocfg 0.1.7",
+ "num-traits",
+]
+
+[[package]]
+name = "num-complex"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "747d632c0c558b87dbabbe6a82f3b4ae03720d0646ac5b7b4dae89394be5f2c5"
+dependencies = [
  "num-traits",
 ]
 
@@ -548,11 +591,11 @@ dependencies = [
 
 [[package]]
 name = "num-iter"
-version = "0.1.39"
+version = "0.1.42"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76bd5272412d173d6bf9afdf98db8612bbabc9a7a830b7bfc9c188911716132e"
+checksum = "b2021c8337a54d21aca0d59a92577a029af9431cb59b909b03252b9c164fad59"
 dependencies = [
- "autocfg 0.1.7",
+ "autocfg 1.0.1",
  "num-integer",
  "num-traits",
 ]
@@ -564,7 +607,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f2885278d5fe2adc2f75ced642d52d879bffaceb5a2e0b1d4309ffdfb239b454"
 dependencies = [
  "autocfg 0.1.7",
- "num-bigint",
+ "num-bigint 0.2.3",
+ "num-integer",
+ "num-traits",
+]
+
+[[package]]
+name = "num-rational"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "12ac428b1cb17fce6f731001d307d351ec70a6d202fc2e60f7d4c5e42d8f4f07"
+dependencies = [
+ "autocfg 1.0.1",
+ "num-bigint 0.3.2",
  "num-integer",
  "num-traits",
 ]
@@ -817,6 +872,9 @@ checksum = "8772a4ccbb4e89959023bc5b7cb8623a795caa7092d99f3aa9501b9484d4557d"
 [[package]]
 name = "util"
 version = "0.1.0"
+dependencies = [
+ "num 0.3.1",
+]
 
 [[package]]
 name = "vec_map"
