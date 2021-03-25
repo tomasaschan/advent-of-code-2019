@@ -45,33 +45,17 @@ fn find_shortest_path(map: &WorldMap<Tile>, recursive: bool) -> usize {
 
     while let Some((p, lvl, s)) = q.pop_front() {
         if let Some(t) = map.get(&p) {
-            match t {
-                Tile::Exit => {
-                    if lvl == 0 {
-                        return s;
-                    } else {
-                        seen.insert((p, lvl));
-                        let neighbors = nexts(&p, &t, lvl, recursive);
-                        for (n, lvl) in neighbors.into_iter().filter(|(n, l)| {
-                            *l >= 0 && map.get(&n).unwrap_or(&Tile::Wall).passable()
-                        }) {
-                            if !seen.contains(&(n, lvl)) {
-                                q.push_back((n, lvl, s + 1));
-                            }
-                        }
-                    }
-                }
-                t => {
-                    seen.insert((p, lvl));
-                    let neighbors = nexts(&p, &t, lvl, recursive);
-                    for (n, lvl) in neighbors
-                        .into_iter()
-                        .filter(|(n, l)| *l >= 0 && map.get(&n).unwrap_or(&Tile::Wall).passable())
-                    {
-                        if !seen.contains(&(n, lvl)) {
-                            q.push_back((n, lvl, s + 1));
-                        }
-                    }
+            if *t == Tile::Exit && lvl == 0 {
+                return s;
+            }
+
+            seen.insert((p, lvl));
+            for (n, lvl) in nexts(&p, &t, lvl, recursive)
+                .into_iter()
+                .filter(|(n, l)| *l >= 0 && map.get(&n).unwrap_or(&Tile::Wall).passable())
+            {
+                if !seen.contains(&(n, lvl)) {
+                    q.push_back((n, lvl, s + 1));
                 }
             }
         } else {

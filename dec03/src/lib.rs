@@ -8,7 +8,7 @@ pub fn solve_a(input: &String) -> i32 {
     let (first, second) = parse(&input);
     fn follow(w: &Vec<Instruction>) -> HashSet<(i32, i32)> {
         HashSet::from_iter(follow_wire(&w).into_iter())
-    };
+    }
     let (w1, w2) = (follow(&first), follow(&second));
 
     w1.intersection(&w2)

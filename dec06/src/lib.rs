@@ -59,7 +59,8 @@ fn parse(input: &String) -> HashMap<String, String> {
             let orbiter: String = (&line[delim + 1..]).to_owned();
             assert!(
                 !orbits.contains_key(&orbiter),
-                format!("{} is already in orbit!", orbiter)
+                "{} is already in orbit!",
+                orbiter
             );
             orbits.insert(orbiter, orbitee);
         }

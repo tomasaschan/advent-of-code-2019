@@ -50,7 +50,8 @@ fn run_with_feedback(input: &String, settings: [i128; 5]) -> i128 {
     if let Some(signal) = rx.iter().next() {
         signal
     } else {
-        panic!("Failed to get a final result from settings {:?}", settings);
+        -1
+        // panic!("Failed to get a final result from settings {:?}", settings);
     }
 }
 

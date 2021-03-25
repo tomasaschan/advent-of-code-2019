@@ -75,7 +75,7 @@ fn explore(world: &mut WorldMap<i128>, input: &String) {
                         world.insert(bot, 2);
                         exploration_stack.push(Move::Backtrack(turn_around(ed)))
                     }
-                    _ => panic!(format!("Unknown output from bot: {}", 2)),
+                    _ => panic!("Unknown output from bot: {}", 2),
                 }
             }
             Some(Move::Backtrack(bd)) => {
@@ -84,7 +84,7 @@ fn explore(world: &mut WorldMap<i128>, input: &String) {
                     1 => bot = move_to(bd, &bot),
                     o => {
                         draw(&world);
-                        panic!(format!("Tried to backtrack into a non-empty square! (from {:?} moving {:?} yielded output {})", bot, bd, o));
+                        panic!("Tried to backtrack into a non-empty square! (from {:?} moving {:?} yielded output {})", bot, bd, o);
                     }
                 }
             }

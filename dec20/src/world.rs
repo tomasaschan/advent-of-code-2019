@@ -4,7 +4,7 @@ use std::{
 };
 use util::map_2d::{move_to, Coord, Direction, WorldMap};
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Wall {
     Inner,
     Outer,
@@ -91,11 +91,12 @@ fn connect_portals(map: &mut WorldMap<Tile>) {
 
 fn inner_or_outer(map: &WorldMap<Tile>, (x, y): &Coord) -> Wall {
     let ((xlo, ylo), (xhi, yhi)) = map.corners();
-    if (x - xlo) < 4 || (y - ylo) < 4 || (xhi - x) < 4 || (yhi - y) < 4 {
+    let result = if (x - xlo) <= 2 || (y - ylo) <= 2 || (xhi - x) <= 2 || (yhi - y) <= 2 {
         Wall::Outer
     } else {
         Wall::Inner
-    }
+    };
+    result
 }
 
 fn label_at(map: &WorldMap<Tile>, coord: &Coord) -> Option<(Direction, char, char)> {

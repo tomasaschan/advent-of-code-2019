@@ -35,7 +35,7 @@ impl From<char> for Tile {
             '@' => Tile::Entrance,
             k @ 'a'..='z' => Tile::Key(KeyId::from(k)),
             d @ 'A'..='Z' => Tile::Door(KeyId::from(d)),
-            c => panic!(format!("Unexpected map character: {}", c)),
+            c => panic!("Unexpected map character: {}", c),
         }
     }
 }

@@ -5,7 +5,7 @@ use util::io::read_file;
 fn solves_a() {
     let input = read_file("../input/dec14.txt");
 
-    assert_eq!(solve_a(&input), 0);
+    assert_eq!(solve_a(&input), 612880);
 }
 
 //#[test]

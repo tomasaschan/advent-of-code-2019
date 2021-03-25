@@ -36,7 +36,7 @@ pub fn paint_hull(map: &mut WorldMap<i128>, start: i128, program: &String) {
     let (input, output) = Builder::new().parse(program).run();
 
     let mut pos = (0, 0);
-    let mut dir = Direction::Up;
+    let mut dir = Direction::Down;
 
     input.send(start).unwrap();
 
