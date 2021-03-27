@@ -53,6 +53,11 @@ impl Memory {
         data.insert(Memory::RELATIVE_BASE, 0);
         // Jumpback pointer, for executing hooks mid-program
         data.insert(Memory::JUMPBACK_PTR, Memory::JUMPBACK_PTR_UNSET_SENTINEL);
+        // Last input instruction executed, to keep track of whether input hook has run
+        data.insert(
+            Memory::LAST_INPUT_INSTR,
+            Memory::JUMPBACK_PTR_UNSET_SENTINEL,
+        );
 
         match init_hook {
             Some(hook) => {
