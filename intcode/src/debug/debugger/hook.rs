@@ -15,9 +15,15 @@ impl Debugger {
             return;
         }
         match args[0] {
-            "init" => set_hook(args[1], |hook| self.computer.init_hook = Some(hook)),
-            "exit" => set_hook(args[1], |hook| self.computer.exit_hook = Some(hook)),
-            "input" => set_hook(args[1], |hook| self.computer.input_hook = Some(hook)),
+            "init" => set_hook(args[1], |hook| {
+                self.computer.init_hook = Some(Builder::end_in_99(hook))
+            }),
+            "exit" => set_hook(args[1], |hook| {
+                self.computer.exit_hook = Some(Builder::end_in_99(hook))
+            }),
+            "input" => set_hook(args[1], |hook| {
+                self.computer.input_hook = Some(Builder::end_in_99(hook))
+            }),
             _ => println!("Invalid hook type; valid values are init, exit or input."),
         }
     }
