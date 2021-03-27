@@ -8,7 +8,7 @@ impl Debugger {
                 "Available commands:\n",
                 "l  | load\tload <path-to-program-file>",
                 "h  | hook\thook <init|exit|input> <comma-separated ints>",
-                "s  | show",
+                "s  | show [<offset>]",
                 "n  | next",
                 "in | input\tinput <comma-separated ints>",
                 "     ascii\tascii <on|off>",
