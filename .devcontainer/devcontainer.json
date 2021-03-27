@@ -1,11 +1,6 @@
 {
     "name": "Rust",
-    "image": "mcr.microsoft.com/vscode/devcontainers/rust:1",
-    "runArgs": [
-        "--cap-add=SYS_PTRACE",
-        "--security-opt",
-        "seccomp=unconfined"
-    ],
+    "image": "docker.pkg.github.com/tomasaschan/vscode-devcontainers/rust:local",
     // Set *default* container specific settings.json values on container create.
     "settings": {
         "terminal.integrated.shell.linux": "/bin/bash",
