@@ -139,7 +139,7 @@ impl Builder {
         output
     }
 
-    fn end_in_99(hook: Vec<i128>) -> Vec<i128> {
+    pub fn end_in_99(hook: Vec<i128>) -> Vec<i128> {
         let mut hook = hook.clone();
         if !hook.ends_with(&[99]) {
             hook.push(99)
