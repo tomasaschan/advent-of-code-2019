@@ -1,4 +1,5 @@
 use super::super::super::ops::param_mode;
+use super::super::super::Memory;
 use super::Debugger;
 
 impl Debugger {
@@ -39,7 +40,19 @@ impl Debugger {
             self.computer.value_at_offset(2, param_mode(a / 100, 2)),
             self.computer.value_at_offset(3, param_mode(a / 100, 3))
         );
-        println!("    +--------+--------+--------+--------+");
+        println!("    +--------+--------+--------+--------+--------+--------+--------+");
+        println!("    | rel bs | jmpb p | inih p | exth p | inph p | linp i | exth r |");
+        println!(
+            "    | {:>6} | {:>6} | {:>6} | {:>6} | {:>6} | {:>6} | {:>6} |",
+            self.computer.unsafe_read(Memory::RELATIVE_BASE),
+            self.computer.unsafe_read(Memory::JUMPBACK_PTR),
+            self.computer.unsafe_read(Memory::INIT_HOOK_PTR),
+            self.computer.unsafe_read(Memory::EXIT_HOOK_PTR),
+            self.computer.unsafe_read(Memory::INPUT_HOOK_PTR),
+            self.computer.unsafe_read(Memory::LAST_INPUT_INSTR),
+            self.computer.unsafe_read(Memory::EXIT_HOOK_RUN),
+        );
+        println!("    +--------+--------+--------+--------+--------+--------+--------+");
     }
 }
 fn op_of(i: i128) -> String {
