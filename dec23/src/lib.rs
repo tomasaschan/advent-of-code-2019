@@ -1,43 +1,61 @@
-use intcode::Builder;
-use std::{
-    collections::HashMap,
-    sync::mpsc::{Receiver, Sender},
-};
+mod nat;
+mod nic;
 
-pub fn solve_a(input: &String) -> i128 {
-    let mut connections = HashMap::new();
+use nat::run_nat;
 
-    for i in 0..50 {
-        let (input, output) = Builder::new()
-            .parse(&input)
-            .initial_input(vec![i])
-            .input_default(-1)
-            .silent()
-            .run();
-        connections.insert(i, (input, output));
-    }
-
-    read_y_to_255(&connections)
+#[derive(Clone, Copy, Debug)]
+pub struct Packet {
+    addr: i128,
+    x: i128,
+    y: i128,
 }
 
-fn read_y_to_255(connections: &HashMap<i128, (Sender<i128>, Receiver<i128>)>) -> i128 {
-    loop {
-        for i in 0..50 {
-            let (_, output) = &connections[&i];
-            if let Some(addr) = match output.try_recv() {
-                Ok(value) => Some(value),
-                Err(_) => None,
-            } {
-                let x = output.recv().unwrap();
-                let y = output.recv().unwrap();
+pub fn solve_a(input: &String) -> i128 {
+    run_nat(&input, true)
+}
 
-                if addr == 255 {
-                    return y;
-                } else if let Some((input, _)) = connections.get(&addr) {
-                    input.send(x).unwrap();
-                    input.send(y).unwrap();
-                }
-            }
-        }
+pub fn solve_b(input: &String) -> i128 {
+    run_nat(&input, false)
+}
+
+#[cfg(test)]
+mod solver_tests {
+    use super::*;
+    use intcode::Builder;
+    use util::io::read_file;
+
+    #[test]
+    fn test_input_hook() {
+        let (input, output) = Builder::new()
+            .parse(&"3,5,4,5,99".to_string())
+            .input_hook(vec![104, -17])
+            .run();
+
+        assert_eq!(
+            output
+                .recv_timeout(std::time::Duration::from_secs(1))
+                .unwrap(),
+            -17
+        );
+        input.send(42).unwrap();
+        assert_eq!(
+            output
+                .recv_timeout(std::time::Duration::from_secs(3))
+                .unwrap(),
+            42
+        );
+    }
+
+    #[test]
+    // #[cfg(allow_dead_code)]
+    fn a() {
+        let input = read_file("../input/dec23.txt");
+        assert_eq!(solve_a(&input), 19473);
+    }
+
+    #[test]
+    fn b() {
+        let input = read_file("../input/dec23.txt");
+        assert_eq!(solve_b(&input), 12475);
     }
 }
