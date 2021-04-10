@@ -33,29 +33,31 @@ pub fn solve_b(input: &String) -> i128 {
 }
 
 pub fn paint_hull(map: &mut WorldMap<i128>, start: i128, program: &String) {
-    let (input, output) = Builder::new().parse(program).run();
+    let (input, output) = Builder::new()
+        .parse(program)
+        .initial_input(vec![start])
+        .run();
 
     let mut pos = (0, 0);
     let mut dir = Direction::Down;
 
-    input.send(start).unwrap();
-
     loop {
-        let clr = output.recv().expect("error getting color");
-        let trn = output.recv().expect("error getting turn");
-
-        map.update(pos, |_| clr);
-        dir = match trn {
-            0 => turn_left(dir),
-            1 => turn_right(dir),
-            _ => panic!("Got instruction to turn an unknown direction: {}", trn),
-        };
-        pos = move_to(dir, &pos);
-
-        let new_clr = map.get(&pos).unwrap_or(&0);
-        match input.send(*new_clr) {
-            Ok(_) => (),
-            Err(_) => break,
+        if let Ok(clr) = output.recv() {
+            let trn = output.recv().expect("error getting turn");
+            map.update(pos, |_| clr);
+            dir = match trn {
+                0 => turn_left(dir),
+                1 => turn_right(dir),
+                _ => panic!("Got instruction to turn an unknown direction: {}", trn),
+            };
+            pos = move_to(dir, &pos);
+            let new_clr = map.get(&pos).unwrap_or(&0);
+            match input.send(*new_clr) {
+                Ok(_) => (),
+                Err(_) => break,
+            }
+        } else {
+            break;
         }
     }
 }
