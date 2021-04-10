@@ -56,7 +56,7 @@ fn run(program_file: &str, ascii: bool) -> Result<(), String> {
         }
     });
 
-    loop {
+    spawn(move || loop {
         let mut s = String::new();
         std::io::stdin()
             .read_line(&mut s)
@@ -67,9 +67,11 @@ fn run(program_file: &str, ascii: bool) -> Result<(), String> {
         for i in interpret_input(&s, ascii) {
             in_tx.send(i).expect("Failed to send input to channel!");
         }
-    }
+    });
     computer_h.join().map_err(|e| format!("{:?}", e))?;
+    println!("(intcode computer halted)");
     output_h.join().map_err(|e| format!("{:?}", e))?;
+
     println!();
     Ok(())
 }

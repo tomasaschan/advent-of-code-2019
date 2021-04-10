@@ -28,7 +28,7 @@ impl Debugger {
         }
     }
 
-    pub fn hooks(&self, args: &[&str]) {
+    pub fn hooks(&self, _args: &[&str]) {
         fn show_hook(name: &str, hook: &Option<Vec<i128>>) {
             match hook {
                 Some(instrs) => {
