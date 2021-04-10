@@ -249,7 +249,7 @@ mod solver_tests {
     #[test]
     fn b() {
         let input = read_file("../input/dec24.txt");
-        assert_eq!(b::solve(&input), 0);
+        assert_eq!(b::solve(&input), 1926);
     }
 
     #[test]
