@@ -2,7 +2,6 @@ use intcode::*;
 // use std::iter::FromIterator;
 use util::map_2d::*;
 
-pub mod interactive;
 pub mod scaffold;
 
 pub fn solve_a(input: &String) -> i32 {
